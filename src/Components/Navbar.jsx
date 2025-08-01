@@ -7,7 +7,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <nav className="sticky top-0 bg-white shadow-md px-6 py-4 z-50">
+    <nav className="absolute top-0 left-0 right-0 bg-white/90 backdrop-blur-sm shadow-md px-6 py-4 z-50">
       <div className="flex justify-between items-center">
         <img 
           src={logoImage} 
@@ -28,7 +28,7 @@ export default function Navbar() {
           <li className="hover:text-pink-500 cursor-pointer">Home</li>
           <li className="hover:text-pink-500 cursor-pointer">Shop</li>
           <li className="hover:text-pink-500 cursor-pointer">About Us</li>
-          <li className="hover:text-pink-500 cursor-pointer">Impact</li>
+          {/* <li className="hover:text-pink-500 cursor-pointer">Impact</li> */}
           <li className="hover:text-pink-500 cursor-pointer">Contact</li>
         </ul>
       </div>
@@ -47,7 +47,7 @@ export default function Navbar() {
             animate={{ y: 0 }}
             className="flex flex-col py-4"
           >
-            {["Home", "Shop", "About Us", "Impact", "Contact"].map((item, idx) => (
+            {["Home", "Shop", "About Us", "Contact"].map((item, idx) => (
               <motion.li 
                 key={idx} 
                 initial={{ opacity: 0, x: -20 }}

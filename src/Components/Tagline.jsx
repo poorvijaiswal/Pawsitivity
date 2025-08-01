@@ -77,7 +77,7 @@ export default function Tagline() {
         <div className="flex items-center justify-center lg:justify-start gap-2 sm:gap-4 lg:ml-[-200px] xl:ml-[-280px] sm:-mt-6 lg:-mt-6 xl:-mt-8">
           <div 
             ref={shiningRef} 
-            className="font-script font-bold text-amber-400
+            className="font-script font-bold text-amber-400 xl:ml-20
                        text-4xl sm:text-5xl md:text-6xl lg:text-6xl xl:text-8xl"
             style={{ transform: 'translateX(-30px)', opacity: 0 }}>
             shining
