@@ -129,7 +129,7 @@ const CustomerStoriesMasterFixed = () => {
   }, []);
 
   return (
-    <div ref={sectionRef} className="relative py-8 overflow-hidden bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-50">
+    <div ref={sectionRef} className="relative py-8 overflow-hidden bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-50 rounded-t-xl mt-5">
       {/* Background elements */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-5 left-5 w-20 h-20 bg-teal-200/20 rounded-full blur-2xl"></div>

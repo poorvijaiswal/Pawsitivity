@@ -141,15 +141,15 @@ export default function TestimonialsCarousel() {
 
   return (
     <div 
-      className="bg-gradient-to-br from-[#e6f0e9] via-[#f0f9f2] to-[#e6f0e9] py-6 sm:py-8 px-4 text-[#003333] font-sans relative overflow-hidden"
+      className="bg-orange-200 py-6 sm:py-8 px-4 text-[#003333] font-sans relative overflow-hidden rounded-b-xl"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
       {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-green-400 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-300 rounded-full blur-3xl"></div>
+      <div className="absolute inset-0 opacity-15">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-orange-200 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-10 w-80 h-80 bg-yellow-200 rounded-full blur-3xl"></div>
       </div>
 
       <div className="max-w-8xl mx-auto relative">

@@ -90,7 +90,7 @@ const Collaborators = () => {
   };
 
   return (
-    <section className="py-8 sm:py-12 md:py-16 bg-gradient-to-br from-orange-50 via-pink-50 to-orange-100 overflow-hidden">
+    <section className="py-8 sm:py-12 md:py-16 bg-gradient-to-br from-orange-50 via-pink-50 to-orange-100 overflow-hidden rounded-xl">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <motion.div
