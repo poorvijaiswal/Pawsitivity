@@ -134,7 +134,7 @@ export default function AnimatedHeader() {
                     ref={line1Ref}
                     className="mb-2 lg:mb-4"
                 >
-                    <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white tracking-wider">
+                    <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-light text-white tracking-wide">
                         WHERE CARE MEETS
                         <span className="inline-block ml-2 sm:ml-4 lg:ml-8 w-12 sm:w-16 md:w-20 lg:w-24 xl:w-32 h-1 bg-white align-middle"></span>
                     </h2>
@@ -246,15 +246,16 @@ export default function AnimatedHeader() {
                 
                 .flicking-text {
                     font-size: clamp(1.75rem, 4.5vw, 3.5rem);
-                    font-weight: bold;
+                    font-weight: 500;
                     color: #fbbf24;
                     transform-origin: center center;
                     display: inline-block;
-                    letter-spacing: 0.2em;
+                    letter-spacing: 0.1em;
                     position: relative;
                     -webkit-font-smoothing: antialiased;
                     -moz-osx-font-smoothing: grayscale;
                     white-space: nowrap;
+                    font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', sans-serif;
                 }
                 
                 .char {
