@@ -7,8 +7,8 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <nav className="absolute top-0 left-0 right-0 bg-white/90 backdrop-blur-sm shadow-md px-6 py-4 z-50">
-      <div className="flex justify-between items-center">
+    <nav className="bg-black backdrop-blur-sm shadow-md z-50 mt-0.5 relative">
+      <div className="flex justify-between items-center bg-white px-6 py-1 rounded-xl">
         <img 
           src={logoImage} 
           alt="Pawsitivity Logo" 
@@ -40,7 +40,7 @@ export default function Navbar() {
           animate={{ height: "auto", opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
           transition={{ duration: 0.3, ease: "easeInOut" }}
-          className="md:hidden mt-4 bg-gradient-to-r from-pink-50 to-orange-50 rounded-lg shadow-lg overflow-hidden"
+          className="md:hidden absolute top-full left-0 right-0 mt-2 bg-white/98 rounded-lg shadow-lg overflow-hidden z-50"
         >
           <motion.ul
             initial={{ y: -20 }}

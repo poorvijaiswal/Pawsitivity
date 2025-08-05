@@ -10,6 +10,7 @@ export default {
       script: ['Pacifico', 'cursive'], // for "shining" & "paw"
       serif: ['Playfair Display', 'serif'], // HOPE
       bold: ['Poppins', 'sans-serif'], // "FOR EVERY"
+      yellowtail: ['Yellowtail', 'cursive'], // for tagline
     },
     colors: {
       pawBlue: '#2bb6b1',   // custom paw color

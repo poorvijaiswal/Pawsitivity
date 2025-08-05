@@ -78,7 +78,7 @@ export default function Hero() {
   }, []);
 
   return (
-    <section className="h-screen overflow-hidden relative w-full">
+    <section className="h-[calc(100vh-5rem)] overflow-hidden relative w-full bg-white rounded-lg mt-1" >
       {/* Mobile Background - Dog Image */}
       <div className="lg:hidden absolute inset-0 z-0">
         <img
@@ -93,7 +93,7 @@ export default function Hero() {
       <div className="hidden lg:block absolute bottom-20 right-20 w-24 h-24 bg-pink-200 rounded-full opacity-30"></div>
       <div className="hidden lg:block absolute top-1/2 right-10 w-16 h-16 bg-orange-200 rounded-full opacity-25"></div>
       
-      <div className="container mx-auto px-6 py-12 pt-24 flex flex-col lg:flex-row items-center justify-between h-full relative z-10 gap-8 xl:gap-12 2xl:gap-16">
+      <div className="container mx-auto px-6 py-8 flex flex-col lg:flex-row items-center justify-between h-full relative z-10 gap-8 xl:gap-12 2xl:gap-16 rounded-xl">
         
         {/* Left side - Images (Desktop only) */}
         <div className="hidden lg:flex flex-1 flex-col items-start space-y-4 mb-12 lg:mb-0 max-w-md xl:max-w-lg 2xl:max-w-xl lg:pt-10">
@@ -226,7 +226,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="mt-8 relative sm:fixed lg:relative bottom-6 right-6 sm:bottom-6 sm:right-6 lg:bottom-auto lg:right-auto z-30"
+            className="mt-8 relative z-30"
           >
             <button className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 lg:px-8 lg:py-4 xl:ml-28 2xl:ml-20 rounded-full text-base lg:text-lg font-semibold transition-colors duration-300 shadow-lg flex items-center space-x-3">
               <span>Shop Now</span>

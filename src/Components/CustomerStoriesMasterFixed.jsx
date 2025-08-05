@@ -1,11 +1,13 @@
 import React, { useRef, useEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { FaHeart } from "react-icons/fa";
 
 import IMG1 from "../assets/CustomerStories/Dog.jpg";
 import IMG2 from "../assets/CustomerStories/dog3.jpg";
 import IMG3 from "../assets/CustomerStories/Cow.jpg";
 import IMG4 from "../assets/CustomerStories/dog2.jpg";
+import pinkStar from "../assets/pinkstar.png";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -14,6 +16,7 @@ const CustomerStoriesMasterFixed = () => {
   const titleRef = useRef(null);
   const subtitleRef = useRef(null);
   const cardsRef = useRef([]);
+  const starsRef = useRef([]);
 
   const stories = [
     { image: IMG1 },
@@ -44,7 +47,7 @@ const CustomerStoriesMasterFixed = () => {
           // Title with rotation and scale
           gsap.fromTo(title, 
             { y: -30, opacity: 0, scale: 0.9, rotation: -5 },
-            { y: 0, opacity: 1, scale: 1, rotation: 0, duration: 1.2, ease: "back.out(1.7)" }
+            { y: 0, opacity: 1, scale: 1, rotation: 0, duration: 2, ease: "back.out(1.7)" }
           );
 
           // Subtitle with slide and fade
@@ -81,6 +84,16 @@ const CustomerStoriesMasterFixed = () => {
             yoyo: true,
             repeat: -1,
             delay: 1
+          });
+
+          // Pink star rotation animation
+          const stars = starsRef.current.filter(Boolean);
+          gsap.to(stars, {
+            rotation: 360,
+            duration: 8,
+            ease: "none",
+            repeat: -1,
+            stagger: 0.2
           });
         },
       });
@@ -121,6 +134,20 @@ const CustomerStoriesMasterFixed = () => {
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-5 left-5 w-20 h-20 bg-teal-200/20 rounded-full blur-2xl"></div>
         <div className="absolute bottom-5 right-5 w-24 h-24 bg-blue-200/20 rounded-full blur-2xl"></div>
+        
+        {/* Rotating Pink Stars */}
+        <img
+          ref={el => starsRef.current[0] = el}
+          src={pinkStar}
+          alt="decorative star"
+          className="absolute top-4 right-4 sm:top-8 sm:right-8 md:top-12 md:right-16 w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 opacity-50 sm:opacity-60 md:opacity-70"
+        />
+        <img
+          ref={el => starsRef.current[1] = el}
+          src={pinkStar}
+          alt="decorative star"
+          className="absolute bottom-4 left-4 sm:bottom-8 sm:left-8 md:bottom-12 md:left-16 w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 opacity-40 sm:opacity-50 md:opacity-60"
+        />
       </div>
       
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -177,7 +204,7 @@ const CustomerStoriesMasterFixed = () => {
                 
                 {/* Heart icon */}
                 <div className="absolute top-2 right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transform scale-0 group-hover:scale-100 transition-all duration-300 z-10">
-                  <span className="text-white text-xs">❤️</span>
+                  <FaHeart className="text-white text-xs" />
                 </div>
                 
                 {/* Hover text */}

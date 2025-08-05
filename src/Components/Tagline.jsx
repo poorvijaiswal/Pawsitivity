@@ -1,16 +1,26 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
+import pinkStarImage from '../assets/pinkstar.png';
 
 export default function Tagline() {
   const shiningRef = useRef(null);
   const hopeRef = useRef(null);
   const foreveryRef = useRef(null);
   const pawRef = useRef(null);
+  const pinkStarRef = useRef(null);
 
   useEffect(() => {
     // Set initial state
     gsap.set([shiningRef.current, hopeRef.current, foreveryRef.current, pawRef.current], {
       opacity: 0
+    });
+
+    // Set up infinite rotation for pink star
+    gsap.to(pinkStarRef.current, {
+      rotation: 360,
+      duration: 3,
+      repeat: -1,
+      ease: "none"
     });
 
     const tl = gsap.timeline({ 
@@ -74,13 +84,23 @@ export default function Tagline() {
     <div className="text-center lg:text-left leading-tight w-full max-w-4xl pt-20 lg:pt-5">
       <h2 className="space-y-1 sm:space-y-2">
         {/* shining HOPE - combined in one line, shifted upwards */}
-        <div className="flex items-center justify-center lg:justify-start gap-2 sm:gap-4 lg:ml-[-200px] xl:ml-[-280px] sm:-mt-6 lg:-mt-6 xl:-mt-8">
+        <div className="flex items-center justify-center lg:justify-start gap-2 sm:gap-4 lg:ml-[-200px] xl:ml-[-280px] sm:-mt-6 lg:-mt-6 xl:-mt-8 relative">
           <div 
             ref={shiningRef} 
             className="font-script font-bold text-amber-400 xl:ml-20
-                       text-4xl sm:text-5xl md:text-6xl lg:text-6xl xl:text-8xl"
+                       text-4xl sm:text-5xl md:text-6xl lg:text-6xl xl:text-8xl relative"
             style={{ transform: 'translateX(-30px)', opacity: 0 }}>
-            shining
+            {/* Pink Star - positioned relative to "shining" text */}
+            <img 
+              ref={pinkStarRef}
+              src={pinkStarImage}
+              alt="pink star"
+              className="absolute xl:-top-4 lg:-top-3 md:-top-2 sm:-top-1
+                         -left-4 sm:-left-3 md:-left-5 lg:-left-8 xl:-left-9
+                         w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 xl:w-20 xl:h-20 
+                         z-10"
+            />
+            Shining
           </div>
 
           <div 
@@ -96,19 +116,19 @@ export default function Tagline() {
         <div className="flex items-center justify-center lg:justify-start gap-4 sm:gap-6 mt-2">
           <span 
             ref={foreveryRef} 
-            className="font-sans text-gray-800 tracking-wide
+            className="font-yellowtail text-gray-800 tracking-wide
                        text-lg sm:text-xl md:text-2xl lg:text-2xl xl:text-3xl"
             style={{ transform: 'translateX(30px)', opacity: 0 }}>
-            FOR EVERY
+            For Every
           </span>
 
           <div 
             ref={pawRef} 
             className="flex items-center"
             style={{ transform: 'translateY(20px)', opacity: 0 }}>
-            <span className="font-script text-gray-900 font-bold mr-2
+            <span className="font-Rubik text-amber-900 font-bold mr-2
                              text-3xl sm:text-4xl md:text-6xl lg:text-6xl xl:text-8xl">
-              Paw
+              P A W
             </span>
             {/* <span className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl text-[#2bb6b1]">🐾</span> */}
             {/* <span className="text-2xl sm:text-2xl md:text-3xl lg:text-3xl text-pink-400 ml-1">✨</span> */}
