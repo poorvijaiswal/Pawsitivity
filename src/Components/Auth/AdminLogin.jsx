@@ -62,7 +62,7 @@ export default function AdminLogin() {
 
       // Mock authentication logic for admin only
       const isValidAdmin = formData.email === 'admin@pawsitivity.com' && formData.password === 'admin123';
-
+      console.log('Admin login attempt:', formData.email, isValidAdmin, formData.password);
       if (isValidAdmin) {
         // Login via context
         login({
@@ -82,8 +82,6 @@ export default function AdminLogin() {
       setIsLoading(false);
     }
   };
-
-  // ...existing code...
   return (
     <div className="h-screen bg-gradient-to-br from-yellow-50 via-amber-50 to-orange-50 flex items-center justify-center p-4">
       <motion.div
@@ -217,10 +215,10 @@ export default function AdminLogin() {
                 Back to Home
               </button>
             </div>
+            
           </div>
         </div>
       </motion.div>
     </div>
   );
-  // ...existing code...
 }

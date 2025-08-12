@@ -61,7 +61,7 @@ export default function Login() {
         className="bg-white rounded-2xl shadow-xl w-full max-w-4xl flex flex-col lg:flex-row overflow-hidden"
       >
         {/* Left Panel */}
-        <div className="w-full lg:w-1/2 bg-gradient-to-br from-yellow-400 to-yellow-500 p-6 lg:p-10 text-white flex flex-col justify-center items-center order-2 lg:order-1">
+        <div className="hidden lg:flex w-full lg:w-1/2 bg-gradient-to-br from-yellow-400 to-yellow-500 p-6 lg:p-10 text-white flex-col justify-center items-center order-2 lg:order-1">
           <h2 className="text-2xl lg:text-3xl font-bold mb-2 text-center">Hello, Friend!</h2>
           <p className="mb-6 text-center text-sm px-4">Enter your personal details and start your journey with us</p>
           <button
@@ -120,11 +120,10 @@ export default function Login() {
               disabled={isLoading}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className={`w-full py-2 lg:py-3 rounded-lg font-semibold text-white transition-all text-sm lg:text-base ${
-                isLoading
-                  ? 'bg-yellow-300 cursor-not-allowed'
-                  : 'bg-yellow-500 hover:bg-yellow-600 shadow-md'
-              }`}
+              className={`w-full py-2 lg:py-3 rounded-lg font-semibold text-white transition-all text-sm lg:text-base ${isLoading
+                ? 'bg-yellow-300 cursor-not-allowed'
+                : 'bg-yellow-500 hover:bg-yellow-600 shadow-md'
+                }`}
             >
               {isLoading ? 'Signing In...' : 'Sign In'}
             </motion.button>
@@ -151,6 +150,22 @@ export default function Login() {
               onClick={() => navigate('/signup')}
             >
               Sign up here
+            </button>
+          </div>
+          <div className='mt-4 text-center'>
+            <button
+              onClick={() => navigate('/')}
+              className="text-gray-500 hover:text-gray-700 font-medium"
+            >
+              Back to Home
+            </button>
+          </div>
+          <div className="lg:hidden text-center mt-4">
+            <button
+              onClick={() => navigate('/admin/login')}
+              className="text-yellow-600 hover:text-yellow-700 font-medium hover:underline"
+            >
+              Admin Portal
             </button>
           </div>
         </div>

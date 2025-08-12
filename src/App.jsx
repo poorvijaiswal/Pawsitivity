@@ -16,7 +16,18 @@ import { AuthProvider, useAuth } from './Components/Auth/AuthContext'
 import AdminDashboard from './Components/Admin/AdminDashboard'
 
 // Protected route component
-const ProtectedRoute = ({ children, isLoggedIn, userType, requiredUserType }) => {
+const ProtectedRoute = ({ children, isLoggedIn, userType, requiredUserType, loading }) => {
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!isLoggedIn) {
     return <Navigate to="/login" replace />;
   }
@@ -43,7 +54,7 @@ const HomePage = () => {
 };
 
 function MainApp() {
-  const { isLoggedIn, userType, logout } = useAuth();
+  const { isLoggedIn, userType, logout, loading } = useAuth();
   
   const handleLogout = () => {
     logout();
@@ -83,9 +94,56 @@ function MainApp() {
             } 
           />
           <Route 
+            path="/shop" 
+            element={
+              <>
+                <Navbar 
+                  isLoggedIn={isLoggedIn} 
+                  userType={userType} 
+                  onLogout={handleLogout}
+                />
+                <div className="container mx-auto py-8">Shop Page</div>
+                <Footer />
+              </>
+            } 
+          />
+          <Route 
+            path="/about" 
+            element={
+              <>
+                <Navbar 
+                  isLoggedIn={isLoggedIn} 
+                  userType={userType} 
+                  onLogout={handleLogout}
+                />
+                <div className="container mx-auto py-8">About Us Page</div>
+                <Footer />
+              </>
+            } 
+          />
+          <Route 
+            path="/contact" 
+            element={
+              <>
+                <Navbar 
+                  isLoggedIn={isLoggedIn} 
+                  userType={userType} 
+                  onLogout={handleLogout}
+                />
+                <div className="container mx-auto py-8">Contact Page</div>
+                <Footer />
+              </>
+            } 
+          />
+          <Route 
             path="/admin/dashboard" 
             element={
-              <ProtectedRoute isLoggedIn={isLoggedIn} userType={userType} requiredUserType="admin">
+              <ProtectedRoute 
+                isLoggedIn={isLoggedIn} 
+                userType={userType} 
+                requiredUserType="admin" 
+                loading={loading}
+              >
                 <Navbar 
                   isLoggedIn={isLoggedIn} 
                   userType={userType} 

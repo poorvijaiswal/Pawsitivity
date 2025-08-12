@@ -12,7 +12,7 @@ const initialProducts = [
     category: 'Collars',
     price: 599,
     inventory: 45,
-    image: '/src/assets/dog1.png'
+    image: null, // Placeholder for image file
   },
   {
     id: 2,
@@ -20,42 +20,24 @@ const initialProducts = [
     category: 'Collars',
     price: 699,
     inventory: 32,
-    image: '/src/assets/dog2.png'
+    image: null,
   },
-  {
-    id: 3,
-    name: 'Reflective Dog Collar - Large',
-    category: 'Collars',
-    price: 799,
-    inventory: 21,
-    image: '/src/assets/dog1.png'
-  },
-  {
-    id: 4,
-    name: 'Pet ID Tag - Round',
-    category: 'Accessories',
-    price: 299,
-    inventory: 67,
-    image: '/src/assets/dog2.png'
-  },
-  {
-    id: 5,
-    name: 'Pet ID Tag - Bone Shaped',
-    category: 'Accessories',
-    price: 349,
-    inventory: 53,
-    image: '/src/assets/dog1.png'
-  }
 ];
 
 export default function AdminDashboard() {
-    const { userData: user } = useAuth();
+  const { user, logout, isLoggedIn, loading } = useAuth();
   const navigate = useNavigate();
   const [products, setProducts] = useState(initialProducts);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentTab, setCurrentTab] = useState('products');
+
+  useEffect(() => {
+    if (!loading && (!isLoggedIn || user?.userType !== 'admin')) {
+      navigate('/admin/login');
+    }
+  }, [loading, isLoggedIn, user, navigate]);
 
   useEffect(() => {
     // Load products from localStorage if available
@@ -74,6 +56,22 @@ export default function AdminDashboard() {
     localStorage.setItem('pawsitivity_products', JSON.stringify(products));
   }, [products]);
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Only check authentication after loading is complete
+  if (!isLoggedIn || user?.userType !== 'admin') {
+    return null; // Don't render anything while redirecting
+  }
+
   const handleAddProduct = () => {
     setSelectedProduct({
       id: products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1,
@@ -81,7 +79,7 @@ export default function AdminDashboard() {
       category: '',
       price: 0,
       inventory: 0,
-      image: '/src/assets/dog1.png'
+      image: null,
     });
     setIsFormOpen(true);
   };
@@ -99,17 +97,17 @@ export default function AdminDashboard() {
 
   const handleSaveProduct = (e) => {
     e.preventDefault();
-    
+
     if (selectedProduct.id) {
       // Update existing product
-      setProducts(products.map(product => 
+      setProducts(products.map(product =>
         product.id === selectedProduct.id ? selectedProduct : product
       ));
     } else {
       // Add new product
       setProducts([...products, selectedProduct]);
     }
-    
+
     setIsFormOpen(false);
     setSelectedProduct(null);
   };
@@ -118,11 +116,21 @@ export default function AdminDashboard() {
     const { name, value } = e.target;
     setSelectedProduct({
       ...selectedProduct,
-      [name]: name === 'price' || name === 'inventory' ? Number(value) : value
+      [name]: name === 'price' || name === 'inventory' ? Number(value) : value,
     });
   };
 
-  const filteredProducts = products.filter(product => 
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedProduct({
+        ...selectedProduct,
+        image: URL.createObjectURL(file), // Preview the image
+      });
+    }
+  };
+
+  const filteredProducts = products.filter(product =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -133,7 +141,7 @@ export default function AdminDashboard() {
       <header className="bg-gradient-to-r from-purple-800 to-indigo-900 text-white py-6 shadow-lg">
         <div className="container mx-auto px-4 flex justify-between items-center">
           <div className="flex items-center space-x-4">
-            <button 
+            <button
               onClick={() => navigate('/')}
               className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
             >
@@ -144,7 +152,7 @@ export default function AdminDashboard() {
               <p className="text-purple-200">Welcome back, {user?.firstName || 'Admin'}</p>
             </div>
           </div>
-          <button 
+          <button
             onClick={logout}
             className="bg-white/10 hover:bg-white/20 text-white py-2 px-4 rounded-lg font-medium transition-colors"
           >
@@ -158,41 +166,37 @@ export default function AdminDashboard() {
         {/* Tabs */}
         <div className="mb-8 flex border-b border-gray-200">
           <button
-            className={`pb-4 px-6 font-medium transition-colors ${
-              currentTab === 'products' 
-                ? 'text-purple-700 border-b-2 border-purple-700' 
-                : 'text-gray-500 hover:text-purple-700'
-            }`}
+            className={`pb-4 px-6 font-medium transition-colors ${currentTab === 'products'
+              ? 'text-purple-700 border-b-2 border-purple-700'
+              : 'text-gray-500 hover:text-purple-700'
+              }`}
             onClick={() => setCurrentTab('products')}
           >
             Products
           </button>
           <button
-            className={`pb-4 px-6 font-medium transition-colors ${
-              currentTab === 'orders' 
-                ? 'text-purple-700 border-b-2 border-purple-700' 
-                : 'text-gray-500 hover:text-purple-700'
-            }`}
+            className={`pb-4 px-6 font-medium transition-colors ${currentTab === 'orders'
+              ? 'text-purple-700 border-b-2 border-purple-700'
+              : 'text-gray-500 hover:text-purple-700'
+              }`}
             onClick={() => setCurrentTab('orders')}
           >
             Orders
           </button>
           <button
-            className={`pb-4 px-6 font-medium transition-colors ${
-              currentTab === 'customers' 
-                ? 'text-purple-700 border-b-2 border-purple-700' 
-                : 'text-gray-500 hover:text-purple-700'
-            }`}
+            className={`pb-4 px-6 font-medium transition-colors ${currentTab === 'customers'
+              ? 'text-purple-700 border-b-2 border-purple-700'
+              : 'text-gray-500 hover:text-purple-700'
+              }`}
             onClick={() => setCurrentTab('customers')}
           >
             Customers
           </button>
           <button
-            className={`pb-4 px-6 font-medium transition-colors ${
-              currentTab === 'analytics' 
-                ? 'text-purple-700 border-b-2 border-purple-700' 
-                : 'text-gray-500 hover:text-purple-700'
-            }`}
+            className={`pb-4 px-6 font-medium transition-colors ${currentTab === 'analytics'
+              ? 'text-purple-700 border-b-2 border-purple-700'
+              : 'text-gray-500 hover:text-purple-700'
+              }`}
             onClick={() => setCurrentTab('analytics')}
           >
             Analytics
@@ -253,11 +257,17 @@ export default function AdminDashboard() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="h-10 w-10 rounded-full overflow-hidden bg-gray-100">
-                            <img 
-                              src={product.image} 
-                              alt={product.name} 
-                              className="h-full w-full object-cover"
-                            />
+                            {product.image ? (
+                              <img
+                                src={product.image}
+                                alt={product.name}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <div className="h-full w-full bg-gray-200 flex items-center justify-center text-gray-500">
+                                No Image
+                              </div>
+                            )}
                           </div>
                           <div className="ml-4">
                             <div className="text-sm font-medium text-gray-900">{product.name}</div>
@@ -309,14 +319,14 @@ export default function AdminDashboard() {
             <p className="text-gray-500">This feature is currently under development.</p>
           </div>
         )}
-        
+
         {currentTab === 'customers' && (
           <div className="bg-white p-6 rounded-lg shadow-md text-center py-16">
             <h3 className="text-xl font-medium text-gray-700 mb-2">Customer Management Coming Soon</h3>
             <p className="text-gray-500">This feature is currently under development.</p>
           </div>
         )}
-        
+
         {currentTab === 'analytics' && (
           <div className="bg-white p-6 rounded-lg shadow-md text-center py-16">
             <h3 className="text-xl font-medium text-gray-700 mb-2">Analytics Dashboard Coming Soon</h3>
@@ -424,16 +434,15 @@ export default function AdminDashboard() {
 
                 <div>
                   <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-1">
-                    Image URL
+                    Upload Image
                   </label>
                   <input
-                    type="text"
+                    type="file"
                     id="image"
                     name="image"
-                    value={selectedProduct.image}
-                    onChange={handleInputChange}
+                    accept="image/*"
+                    onChange={handleImageUpload}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    required
                   />
                   {selectedProduct.image && (
                     <div className="mt-2">
@@ -441,10 +450,6 @@ export default function AdminDashboard() {
                         src={selectedProduct.image}
                         alt="Product preview"
                         className="h-24 w-auto object-contain border rounded"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = '/src/assets/dog1.png';
-                        }}
                       />
                     </div>
                   )}

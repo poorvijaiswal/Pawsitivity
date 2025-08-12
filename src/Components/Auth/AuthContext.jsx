@@ -9,52 +9,49 @@ export function AuthProvider({ children }) {
     isLoggedIn: false,
     userType: null,
     user: null,
-    loading: true
+    loading: true, // Start with loading as true
   });
 
+  // Load user data from localStorage on mount
   useEffect(() => {
-    // Check if user info exists in localStorage on initial load
-    const checkAuth = () => {
-      const storedUser = localStorage.getItem('pawsitivity_user');
-      
-      if (storedUser) {
-        try {
-          const parsedUser = JSON.parse(storedUser);
-          if (parsedUser.isAuthenticated) {
-            setAuthState({
-              isLoggedIn: true,
-              userType: parsedUser.userType,
-              user: parsedUser,
-              loading: false
-            });
-            return;
-          }
-        } catch (error) {
-          console.error('Error parsing user data', error);
-        }
+    const storedUser = localStorage.getItem('pawsitivity_user');
+    if (storedUser) {
+      try {
+        const userData = JSON.parse(storedUser);
+        setAuthState({
+          isLoggedIn: userData.isAuthenticated,
+          userType: userData.userType,
+          user: userData,
+          loading: false, // Set loading to false after loading user data
+        });
+      } catch (error) {
+        console.error('Error loading user data:', error);
+        localStorage.removeItem('pawsitivity_user');
+        setAuthState((prevState) => ({
+          ...prevState,
+          loading: false, // Ensure loading is false even if there's an error
+        }));
       }
-      
-      setAuthState(prev => ({
-        ...prev,
-        loading: false
+    } else {
+      setAuthState((prevState) => ({
+        ...prevState,
+        loading: false, // No user data, set loading to false
       }));
-    };
-    
-    checkAuth();
+    }
   }, []);
 
   // Login function
   const login = (userData) => {
     localStorage.setItem('pawsitivity_user', JSON.stringify({
       ...userData,
-      isAuthenticated: true
+      isAuthenticated: true,
     }));
-    
+
     setAuthState({
       isLoggedIn: true,
       userType: userData.userType,
       user: userData,
-      loading: false
+      loading: false,
     });
   };
 
@@ -62,36 +59,36 @@ export function AuthProvider({ children }) {
   const signup = (userData) => {
     localStorage.setItem('pawsitivity_user', JSON.stringify({
       ...userData,
-      isAuthenticated: true
+      isAuthenticated: true,
     }));
-    
+
     setAuthState({
       isLoggedIn: true,
       userType: userData.userType,
       user: userData,
-      loading: false
+      loading: false,
     });
   };
 
   // Logout function
   const logout = () => {
     localStorage.removeItem('pawsitivity_user');
-    
+
     setAuthState({
       isLoggedIn: false,
       userType: null,
       user: null,
-      loading: false
+      loading: false,
     });
   };
 
   return (
-    <AuthContext.Provider 
-      value={{ 
-        ...authState, 
-        login, 
-        signup, 
-        logout 
+    <AuthContext.Provider
+      value={{
+        ...authState,
+        login,
+        signup,
+        logout,
       }}
     >
       {children}
