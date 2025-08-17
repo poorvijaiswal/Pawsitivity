@@ -1,12 +1,47 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'Yellowtail';
+  src: url('./assets/fonts/Yellowtail-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Allan';
+  src: url('./assets/fonts/Allan-Regular.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Rubik';
+  src: url('./assets/fonts/RubikPuddles-Regular.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Yellowtail font utility classes */
+.font-yellowtail {
+  font-family: 'Yellowtail', cursive;
+}
+.font-Allan {
+  font-family: 'Allan', cursive;
+}
+.font-Rubik {
+  font-family: 'Rubik', sans-serif;
+}
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Inter', 'SF Pro Display', 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
+  /* Light theme by default */
+  color-scheme: light;
+  color: #213547;
+  background-color: black;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -25,7 +60,7 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
+  /* display: flex; */
   /* place-items: center; */ 
   min-width: 320px;
   min-height: 100vh;
@@ -35,3 +70,28 @@ h1 {
   font-size: 3.2em;
   line-height: 1.1;
 }
+
+/* Smooth scrolling for all elements */
+* {
+  scroll-behavior: smooth;
+}
+
+/* Hide scrollbar for webkit browsers */
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Custom animation for slider pause on hover */
+.slider-container:hover .slider-track {
+  animation-play-state: paused;
+}
+
+/* .clip-shape {
+  clip-path: polygon(0 0, 85% 0, 100% 20%, 100% 100%, 15% 100%, 0 80%);
+  border-radius: 16px;
+} */

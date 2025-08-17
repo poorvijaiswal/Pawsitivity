@@ -1,0 +1,8 @@
+/* Global app styles */
+.app {
+  background-color: black;
+  color: black;
+  min-height: 100vh;
+}
+
+/* You can still use Tailwind classes alongside these */
