@@ -18,22 +18,27 @@ const StarRating = React.memo(({ rating, reviewCount }) => (
     </div>
 ));
 
-// Optimized Product Card with lazy loading and proper image sizing
-const ProductCard = React.memo(({ product, onAddToCart }) => {
+// Optimized Product Card with sleeker buttons
+const ProductCard = React.memo(({ product, onAddToCart, cart }) => {
     const navigate = useNavigate();
-    
+
     const handleProductClick = useCallback(() => {
         navigate(`/product/${product.id}`);
     }, [navigate, product.id]);
 
+    // Check if product is already in cart
+    const isInCart = cart.some(item => item.id === product.id);
+
     const handleAddToCartClick = useCallback((e) => {
         e.stopPropagation();
-        onAddToCart(product);
-    }, [onAddToCart, product]);
+        if (!isInCart) {
+            onAddToCart(product);
+        }
+    }, [onAddToCart, product, isInCart]);
 
     return (
         <article className="relative p-4 transition-all duration-200 bg-white border rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1">
-            {/* Optimized Product Image with proper sizing and lazy loading */}
+            {/* Product Image */}
             <div className="mb-4 cursor-pointer" onClick={handleProductClick}>
                 <img 
                     src={product.image} 
@@ -55,31 +60,33 @@ const ProductCard = React.memo(({ product, onAddToCart }) => {
                 >
                     {product.name}
                 </h3>
-                
                 <p className="text-xs text-gray-500 sm:text-sm">by {product.author}</p>
-                
                 <StarRating rating={product.rating} reviewCount={product.reviewCount} />
-                
                 <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-gray-700 sm:text-sm">{product.format}</span>
                 </div>
-                
-                <div className="flex flex-col items-center space-y-3 sm:flex-row sm:space-y-0 sm:justify-between">
-                    <span className="text-lg font-bold text-red-700 sm:text-xl">₹{product.price}.00</span>
-                    <div className="flex space-x-2">
+                {/* Sleek Buttons */}
+                <div className="flex items-center justify-between mt-2 gap-2">
+                    <span className="text-base font-bold text-red-700 sm:text-lg">₹{product.price}.00</span>
+                    <div className="flex gap-1">
                         <button
                             onClick={handleProductClick}
-                            className="px-3 py-2 text-xs font-semibold rounded-lg transition-all duration-200 sm:text-sm bg-gray-200 text-gray-700 hover:bg-gray-300"
+                            className="px-3 py-1 text-xs font-medium rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200 transition-all duration-150 shadow-sm"
                             aria-label={`View details for ${product.name}`}
                         >
-                            View Details
+                            View
                         </button>
                         <button
                             onClick={handleAddToCartClick}
-                            className="px-3 py-2 text-xs font-semibold rounded-lg transition-all duration-200 sm:text-sm bg-orange-500 text-white hover:bg-orange-600 hover:shadow-md"
+                            className={`px-3 py-1 text-xs font-medium rounded-md border transition-all duration-150 shadow-sm ${
+                                isInCart
+                                    ? "bg-gray-300 text-gray-400 border-gray-300 cursor-not-allowed"
+                                    : "bg-orange-500 text-white hover:bg-orange-600 border-orange-500"
+                            }`}
                             aria-label={`Add ${product.name} to cart`}
+                            disabled={isInCart}
                         >
-                            Add to Cart
+                            <FaShoppingCart className="inline-block mr-1 -mt-0.5" /> {isInCart ? "In Cart" : "Cart"}
                         </button>
                     </div>
                 </div>
@@ -159,14 +166,14 @@ export default function BestsellersPage() {
     // Optimized add to cart handler with useCallback
     const handleAddToCart = useCallback((product) => {
         setCart(prevCart => {
+            // If already in cart, do not add again
+            if (prevCart.some(item => item.id === product.id)) return prevCart;
             const updatedCart = [...prevCart, { ...product, quantity: 1, addedAt: new Date().toISOString() }];
             localStorage.setItem("pawsitivity_cart", JSON.stringify(updatedCart));
-            // Dispatch custom event so other tabs/pages update their cart
             window.dispatchEvent(new Event("pawsitivity_cart_updated"));
             return updatedCart;
         });
         setShowCartNotification(true);
-        // Clear notification after 3 seconds
         const timer = setTimeout(() => setShowCartNotification(false), 3000);
         return () => clearTimeout(timer);
     }, []);
@@ -264,6 +271,7 @@ export default function BestsellersPage() {
                                     key={product.id} 
                                     product={product} 
                                     onAddToCart={handleAddToCart}
+                                    cart={cart}
                                 />
                             ))}
                         </div>
@@ -276,7 +284,7 @@ export default function BestsellersPage() {
                 <div className="px-4 py-6 mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div className="text-center">
                         <p className="text-sm text-gray-400">
-                            © 2024 Pawsitivity. Making roads safer for animals, one collar at a time.
+                            © 2025 Pawsitivity. Making roads safer for animals, one collar at a time.
                         </p>
                     </div>
                 </div>
