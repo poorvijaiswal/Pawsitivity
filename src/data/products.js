@@ -10,12 +10,12 @@ export const categoryProducts = {
             format: 'Pack of 5', 
             price: 299, 
             originalPrice: 399,
-            // Use smaller, optimized placeholder images
-            image: 'https://placehold.co/400x400/FBBF24/333333?text=QR+Collar&format=webp', 
+            // Updated with actual collar images
+            image: '/src/assets/New collars QR code/pawelite multicolor.jpg', 
             images: [
-                'https://placehold.co/400x400/FBBF24/333333?text=QR+Collar&format=webp',
-                'https://placehold.co/400x400/F59E0B/333333?text=Detail+1&format=webp',
-                'https://placehold.co/400x400/D97706/333333?text=Detail+2&format=webp'
+                '/src/assets/New collars QR code/pawelite multicolor.jpg',
+                '/src/assets/New collars QR code/pawelite blue.jpg',
+                '/src/assets/New collars QR code/pawelite green.jpg'
             ],
             inStock: true,
             stockCount: 45,
@@ -51,11 +51,11 @@ export const categoryProducts = {
             format: 'Pack of 5',
             price: 399,
             originalPrice: 499,
-            image: 'https://placehold.co/400x400/FBBF24/333333?text=Premium&format=webp',
+            image: '/src/assets/New collars QR code/pawelite navy blue.jpg',
             images: [
-                'https://placehold.co/400x400/FBBF24/333333?text=Premium&format=webp',
-                'https://placehold.co/400x400/F59E0B/333333?text=Premium+Detail&format=webp',
-                'https://placehold.co/400x400/D97706/333333?text=Premium+Close&format=webp'
+                '/src/assets/New collars QR code/pawelite navy blue.jpg',
+                '/src/assets/New collars QR code/pawelite orange.jpg',
+                '/src/assets/New collars QR code/pawelite red.jpg'
             ],
             inStock: true,
             stockCount: 32,
@@ -91,10 +91,10 @@ export const categoryProducts = {
             format: 'Pack of 5',
             price: 349,
             originalPrice: 449,
-            image: 'https://placehold.co/400x400/FBBF24/333333?text=Anti-Theft&format=webp',
+            image: '/src/assets/New collars QR code/anti theft black.jpg',
             images: [
-                'https://placehold.co/400x400/FBBF24/333333?text=Anti-Theft&format=webp',
-                'https://placehold.co/400x400/F59E0B/333333?text=Buckle+Detail&format=webp'
+                '/src/assets/New collars QR code/anti theft black.jpg',
+                '/src/assets/New collars QR code/anti theft blue.jpg'
             ],
             inStock: false,
             stockCount: 0,
@@ -129,7 +129,7 @@ export const categoryProducts = {
             reviewCount: 75,
             format: 'Pack of 5',
             price: 379,
-            image: 'https://placehold.co/400x400/FBBF24/333333?text=D-Ring&format=webp',
+            image: '/src/assets/New collars QR code/anit theft multicolor.jpg',
             inStock: true,
             stockCount: 38,
             category: 'Collars',
@@ -157,7 +157,7 @@ export const categoryProducts = {
             reviewCount: 95,
             format: 'Single Collar',
             price: 149,
-            image: 'https://placehold.co/400x400/FBBF24/333333?text=Glow+Collar&format=webp',
+            image: '/src/assets/New collars QR code/pawelite green.jpg',
             inStock: true,
             stockCount: 28,
             category: 'Collars',
@@ -176,6 +176,163 @@ export const categoryProducts = {
                 'Battery Life': '8-12 hours',
                 'Charging': 'USB-C'
             }
+        },
+        {
+            id: 9,
+            name: 'Anti-Theft Colorful Collar Collection (Pack of 3)',
+            author: 'Pawsitivity',
+            rating: 5,
+            reviewCount: 65,
+            format: 'Pack of 3',
+            price: 399,
+            originalPrice: 499,
+            image: '/src/assets/New collars QR code/anti theft green.jpg',
+            images: [
+                '/src/assets/New collars QR code/anti theft green.jpg',
+                '/src/assets/New collars QR code/anti theft pink.jpg',
+                '/src/assets/New collars QR code/anti theft purple.jpg'
+            ],
+            inStock: true,
+            stockCount: 42,
+            category: 'Collars',
+            description: 'Vibrant anti-theft collar collection featuring secure buckle system and bright colors for enhanced visibility.',
+            features: [
+                'Secure anti-theft buckle',
+                'High-visibility colors',
+                'QR code identification',
+                'Weather-resistant material',
+                'Reflective strips included'
+            ],
+            specifications: {
+                'Material': 'Heavy-duty Nylon',
+                'Size Range': 'Adjustable 28-50cm',
+                'Weight': '65g per collar',
+                'Colors': 'Green, Pink, Purple',
+                'Waterproof Rating': 'IPX6'
+            },
+            benefits: [
+                'Enhanced pet visibility',
+                'Theft-resistant design',
+                'Multiple color options',
+                'Durable construction'
+            ]
+        },
+        {
+            id: 10,
+            name: 'Pawelite Premium Series - Yellow & Orange (Pack of 2)',
+            author: 'Pawsitivity',
+            rating: 5,
+            reviewCount: 88,
+            format: 'Pack of 2',
+            price: 299,
+            originalPrice: 359,
+            image: '/src/assets/New collars QR code/pawelite yellow.jpg',
+            images: [
+                '/src/assets/New collars QR code/pawelite yellow.jpg',
+                '/src/assets/New collars QR code/pawelite orange.jpg'
+            ],
+            inStock: true,
+            stockCount: 35,
+            category: 'Collars',
+            description: 'Premium Pawelite series featuring bright yellow and orange collars for maximum daytime and nighttime visibility.',
+            features: [
+                'Premium Pawelite technology',
+                'Ultra-bright color scheme',
+                'Enhanced QR code system',
+                'Superior reflective coating',
+                'Comfort-fit design'
+            ],
+            specifications: {
+                'Material': 'Premium Pawelite Composite',
+                'Size Range': 'Adjustable 30-52cm',
+                'Weight': '55g per collar',
+                'Colors': 'Bright Yellow, Safety Orange',
+                'Visibility Range': '500m at night'
+            },
+            benefits: [
+                'Maximum visibility day & night',
+                'Premium comfort fit',
+                'Extended durability',
+                'Enhanced safety features'
+            ]
+        },
+        {
+            id: 11,
+            name: 'Anti-Theft Navy & Black Professional Series (Pack of 2)',
+            author: 'Pawsitivity',
+            rating: 4,
+            reviewCount: 72,
+            format: 'Pack of 2',
+            price: 449,
+            originalPrice: 549,
+            image: '/src/assets/New collars QR code/anittheft navy blue.jpg',
+            images: [
+                '/src/assets/New collars QR code/anittheft navy blue.jpg',
+                '/src/assets/New collars QR code/anti theft black (2).jpg'
+            ],
+            inStock: true,
+            stockCount: 28,
+            category: 'Collars',
+            description: 'Professional-grade anti-theft collars in navy blue and black, designed for working dogs and professional use.',
+            features: [
+                'Professional-grade materials',
+                'Advanced anti-theft mechanism',
+                'Discreet color options',
+                'Heavy-duty construction',
+                'Professional QR system'
+            ],
+            specifications: {
+                'Material': 'Military-grade Nylon',
+                'Size Range': 'Adjustable 32-55cm',
+                'Weight': '75g per collar',
+                'Colors': 'Navy Blue, Professional Black',
+                'Security Level': 'Maximum'
+            },
+            benefits: [
+                'Professional appearance',
+                'Maximum security',
+                'Discreet design',
+                'Heavy-duty durability'
+            ]
+        },
+        {
+            id: 12,
+            name: 'Pawelite Pink & Purple Fashion Series (Pack of 2)',
+            author: 'Pawsitivity',
+            rating: 5,
+            reviewCount: 156,
+            format: 'Pack of 2',
+            price: 279,
+            originalPrice: 329,
+            image: '/src/assets/New collars QR code/pawelite pink.jpg',
+            images: [
+                '/src/assets/New collars QR code/pawelite pink.jpg',
+                '/src/assets/New collars QR code/pawelite purple.jpg'
+            ],
+            inStock: true,
+            stockCount: 58,
+            category: 'Collars',
+            description: 'Stylish Pawelite fashion series in beautiful pink and purple colors, perfect for pets who love to stand out.',
+            features: [
+                'Fashion-forward design',
+                'Pawelite premium material',
+                'Stylish color combination',
+                'Comfortable fit system',
+                'QR identification included'
+            ],
+            specifications: {
+                'Material': 'Pawelite Fashion Grade',
+                'Size Range': 'Adjustable 25-48cm',
+                'Weight': '50g per collar',
+                'Colors': 'Pretty Pink, Royal Purple',
+                'Style': 'Fashion Series'
+            },
+            benefits: [
+                'Stylish appearance',
+                'Comfortable daily wear',
+                'Eye-catching colors',
+                'Perfect for photo sessions'
+            ]
         }
     ],
     Tags: [
@@ -188,10 +345,10 @@ export const categoryProducts = {
             format: 'Single Tag',
             price: 99,
             originalPrice: 129,
-            image: 'https://placehold.co/400x400/FBBF24/333333?text=ID+Tag&format=webp',
+            image: '/src/assets/New collars QR code/pawelite multicolor.jpg',
             images: [
-                'https://placehold.co/400x400/FBBF24/333333?text=ID+Tag&format=webp',
-                'https://placehold.co/400x400/F59E0B/333333?text=QR+Code&format=webp'
+                '/src/assets/New collars QR code/pawelite multicolor.jpg',
+                '/src/assets/New collars QR code/pawelite blue.jpg'
             ],
             inStock: true,
             stockCount: 67,
@@ -226,7 +383,7 @@ export const categoryProducts = {
             reviewCount: 180,
             format: 'Single Tag',
             price: 129,
-            image: 'https://placehold.co/400x400/FBBF24/333333?text=Engraved+Tag&format=webp',
+            image: '/src/assets/New collars QR code/pawelite pink.jpg',
             inStock: true,
             stockCount: 45,
             category: 'Tags',
@@ -257,10 +414,10 @@ export const categoryProducts = {
             format: 'Pack of 2',
             price: 399,
             originalPrice: 499,
-            image: 'https://placehold.co/400x400/FBBF24/333333?text=Cattle+Collar&format=webp',
+            image: '/src/assets/New collars QR code/anti theft black.jpg',
             images: [
-                'https://placehold.co/400x400/FBBF24/333333?text=Cattle+Collar&format=webp',
-                'https://placehold.co/400x400/F59E0B/333333?text=Cattle+Detail&format=webp'
+                '/src/assets/New collars QR code/anti theft black.jpg',
+                '/src/assets/New collars QR code/anti theft blue.jpg'
             ],
             inStock: true,
             stockCount: 25,
@@ -295,7 +452,7 @@ export const categoryProducts = {
             reviewCount: 35,
             format: 'Single Collar',
             price: 899,
-            image: 'https://placehold.co/400x400/FBBF24/333333?text=GPS+Cattle&format=webp',
+            image: '/src/assets/New collars QR code/antitheft yellow.jpg',
             inStock: true,
             stockCount: 15,
             category: 'Cattle',
