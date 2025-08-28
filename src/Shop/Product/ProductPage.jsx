@@ -63,15 +63,26 @@ const ProductPage = () => {
         return () => window.removeEventListener("storage", syncCart);
     }, []);
 
+    // Get quantity from cart for this product
+    const cartProduct = cart.find(item => item.id === product?.id);
+    useEffect(() => {
+        // If product is in cart, sync quantity state to cart quantity
+        if (cartProduct) {
+            setQuantity(cartProduct.quantity);
+        } else {
+            setQuantity(1);
+        }
+        // eslint-disable-next-line
+    }, [cartProduct?.quantity, product?.id]);
+
     const handleAddToCart = () => {
         if (!product) return;
-        // If already in cart, just increase quantity
         const existingIndex = cart.findIndex(item => item.id === product.id);
         let updatedCart;
         if (existingIndex !== -1) {
             updatedCart = cart.map((item, idx) =>
                 idx === existingIndex
-                    ? { ...item, quantity: item.quantity + quantity }
+                    ? { ...item, quantity: quantity }
                     : item
             );
         } else {
@@ -307,7 +318,7 @@ const ProductPage = () => {
                             </div>
                             <div className="flex items-center space-x-2">
                                 <FaLock className="text-blue-500" />
-                                <span className="text-sm text-gray-600">30-Day Returns</span>
+                                <span className="text-sm text-gray-600">10-Day Returns</span>
                             </div>
                         </div>
 

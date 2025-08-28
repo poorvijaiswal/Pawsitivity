@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { categoryProducts, getProductsByCategory } from '../data/products';
 import { FaShoppingCart } from "react-icons/fa";
@@ -19,15 +19,15 @@ const StarRating = React.memo(({ rating, reviewCount }) => (
 ));
 
 // Optimized Product Card with sleeker buttons
-const ProductCard = React.memo(({ product, onAddToCart, cart }) => {
+const ProductCard = React.memo(({ product, onAddToCart, cart, onQuantityChange, onRemoveFromCart }) => {
     const navigate = useNavigate();
+
+    const cartItem = cart.find(item => item.id === product.id);
+    const isInCart = !!cartItem;
 
     const handleProductClick = useCallback(() => {
         navigate(`/product/${product.id}`);
     }, [navigate, product.id]);
-
-    // Check if product is already in cart
-    const isInCart = cart.some(item => item.id === product.id);
 
     const handleAddToCartClick = useCallback((e) => {
         e.stopPropagation();
@@ -36,6 +36,17 @@ const ProductCard = React.memo(({ product, onAddToCart, cart }) => {
         }
     }, [onAddToCart, product, isInCart]);
 
+    // New: Remove from cart when quantity is 1 and user clicks '-'
+    const handleDecrease = (e) => {
+        e.stopPropagation();
+        if (cartItem.quantity > 1) {
+            onQuantityChange(product.id, cartItem.quantity - 1);
+        } else {
+            onRemoveFromCart(product.id);
+        }
+    };
+
+    // Quantity controls for products already in cart
     return (
         <article className="relative p-4 transition-all duration-200 bg-white border rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1">
             {/* Product Image */}
@@ -68,7 +79,7 @@ const ProductCard = React.memo(({ product, onAddToCart, cart }) => {
                 {/* Sleek Buttons */}
                 <div className="flex items-center justify-between mt-2 gap-2">
                     <span className="text-base font-bold text-red-700 sm:text-lg">₹{product.price}.00</span>
-                    <div className="flex gap-1">
+                    <div className="flex gap-1 items-center">
                         <button
                             onClick={handleProductClick}
                             className="px-3 py-1 text-xs font-medium rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200 transition-all duration-150 shadow-sm"
@@ -76,18 +87,32 @@ const ProductCard = React.memo(({ product, onAddToCart, cart }) => {
                         >
                             View
                         </button>
-                        <button
-                            onClick={handleAddToCartClick}
-                            className={`px-3 py-1 text-xs font-medium rounded-md border transition-all duration-150 shadow-sm ${
-                                isInCart
-                                    ? "bg-gray-300 text-gray-400 border-gray-300 cursor-not-allowed"
-                                    : "bg-orange-500 text-white hover:bg-orange-600 border-orange-500"
-                            }`}
-                            aria-label={`Add ${product.name} to cart`}
-                            disabled={isInCart}
-                        >
-                            <FaShoppingCart className="inline-block mr-1 -mt-0.5" /> {isInCart ? "In Cart" : "Cart"}
-                        </button>
+                        {isInCart ? (
+                            <div className="flex items-center gap-1">
+                                <button
+                                    onClick={handleDecrease}
+                                    className="px-2 py-1 rounded bg-gray-100 border border-gray-200 text-gray-700 hover:bg-gray-200 text-xs"
+                                    aria-label="Decrease quantity"
+                                >-</button>
+                                <span className="px-2 text-xs">{cartItem.quantity}</span>
+                                <button
+                                    onClick={e => {
+                                        e.stopPropagation();
+                                        onQuantityChange(product.id, cartItem.quantity + 1);
+                                    }}
+                                    className="px-2 py-1 rounded bg-gray-100 border border-gray-200 text-gray-700 hover:bg-gray-200 text-xs"
+                                    aria-label="Increase quantity"
+                                >+</button>
+                            </div>
+                        ) : (
+                            <button
+                                onClick={handleAddToCartClick}
+                                className="px-3 py-1 text-xs font-medium rounded-md border transition-all duration-150 shadow-sm bg-orange-500 text-white hover:bg-orange-600 border-orange-500"
+                                aria-label={`Add ${product.name} to cart`}
+                            >
+                                <FaShoppingCart className="inline-block mr-1 -mt-0.5" /> Cart
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
@@ -112,13 +137,30 @@ const MobileCategorySelector = React.memo(({ categories, activeCategory, setActi
     </div>
 ));
 
-// Notification component
-const CartNotification = React.memo(({ show }) => {
+// Notification component with "View Cart" button
+const CartNotification = React.memo(({ show, onViewCart }) => {
     if (!show) return null;
-    
     return (
-        <div className="fixed z-50 px-4 py-2 text-white transition-all duration-300 bg-green-500 rounded-lg shadow-lg top-20 right-4" role="alert">
-            ✓ Added to cart!
+        <div
+            className="fixed z-50 px-6 py-4 text-white rounded-xl shadow-2xl top-24 right-4 flex items-center gap-4 animate-fade-in-up"
+            style={{
+                minWidth: 220,
+                background: "linear-gradient(90deg, #FFA500 0%, #FFB300 100%)", // orange-yellow gradient
+                color: "#fff",
+                fontWeight: 600
+            }}
+        >
+            <span className="font-semibold">Added to cart!</span>
+            <button
+                onClick={onViewCart}
+                className="ml-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 rounded-lg font-semibold text-white shadow transition"
+                style={{
+                    background: "#FF5C00",
+                    color: "#fff"
+                }}
+            >
+                View Cart
+            </button>
         </div>
     );
 });
@@ -136,6 +178,8 @@ export default function BestsellersPage() {
         }
     });
     const [showCartNotification, setShowCartNotification] = useState(false);
+    const notificationTimeout = useRef(null);
+
     const navigate = useNavigate();
 
     // Memoize categories to prevent re-computation
@@ -166,7 +210,6 @@ export default function BestsellersPage() {
     // Optimized add to cart handler with useCallback
     const handleAddToCart = useCallback((product) => {
         setCart(prevCart => {
-            // If already in cart, do not add again
             if (prevCart.some(item => item.id === product.id)) return prevCart;
             const updatedCart = [...prevCart, { ...product, quantity: 1, addedAt: new Date().toISOString() }];
             localStorage.setItem("pawsitivity_cart", JSON.stringify(updatedCart));
@@ -174,14 +217,45 @@ export default function BestsellersPage() {
             return updatedCart;
         });
         setShowCartNotification(true);
-        const timer = setTimeout(() => setShowCartNotification(false), 3000);
-        return () => clearTimeout(timer);
+        if (notificationTimeout.current) clearTimeout(notificationTimeout.current);
+        notificationTimeout.current = setTimeout(() => setShowCartNotification(false), 3500);
+        return () => clearTimeout(notificationTimeout.current);
     }, []);
 
     // Memoize category change handler
     const handleCategoryChange = useCallback((category) => {
         setActiveCategory(category);
     }, []);
+
+    // Add quantity change handler for cart items
+    const handleQuantityChange = useCallback((productId, newQuantity) => {
+        setCart(prevCart => {
+            const updatedCart = prevCart.map(item =>
+                item.id === productId
+                    ? { ...item, quantity: Math.max(1, newQuantity) }
+                    : item
+            );
+            localStorage.setItem("pawsitivity_cart", JSON.stringify(updatedCart));
+            window.dispatchEvent(new Event("pawsitivity_cart_updated"));
+            return updatedCart;
+        });
+    }, []);
+
+    // Remove product from cart by id
+    const handleRemoveFromCart = useCallback((productId) => {
+        setCart(prevCart => {
+            const updatedCart = prevCart.filter(item => item.id !== productId);
+            localStorage.setItem("pawsitivity_cart", JSON.stringify(updatedCart));
+            window.dispatchEvent(new Event("pawsitivity_cart_updated"));
+            return updatedCart;
+        });
+    }, []);
+
+    // Handler for "View Cart" button in notification
+    const handleViewCart = useCallback(() => {
+        setShowCartNotification(false);
+        navigate('/cart');
+    }, [navigate]);
 
     // Cart item count
     const cartCount = cart.length;
@@ -202,7 +276,7 @@ export default function BestsellersPage() {
                 )}
             </button>
 
-            <CartNotification show={showCartNotification} />
+            <CartNotification show={showCartNotification} onViewCart={handleViewCart} />
 
             <main className="px-4 py-6 mx-auto max-w-7xl sm:px-6 lg:px-8 sm:py-8">
                 {/* Header Section */}
@@ -272,6 +346,8 @@ export default function BestsellersPage() {
                                     product={product} 
                                     onAddToCart={handleAddToCart}
                                     cart={cart}
+                                    onQuantityChange={handleQuantityChange}
+                                    onRemoveFromCart={handleRemoveFromCart}
                                 />
                             ))}
                         </div>

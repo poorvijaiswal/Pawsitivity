@@ -55,6 +55,7 @@ export default function CartPage() {
           : item
       );
       saveCartToStorage(updated);
+      window.dispatchEvent(new Event("pawsitivity_cart_updated"));
       return updated;
     });
   };
