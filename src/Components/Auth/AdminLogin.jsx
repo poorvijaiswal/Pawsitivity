@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { FaEye, FaEyeSlash, FaUser, FaLock } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
+import { adminLogin as adminLoginAPI } from '../../Apis/auth';
 
 export default function AdminLogin() {
   const [formData, setFormData] = useState({
@@ -55,28 +56,31 @@ export default function AdminLogin() {
     if (!validateForm()) return;
 
     setIsLoading(true);
+    setErrors({});
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Call the backend API for admin login
+      const result = await adminLoginAPI({
+        email: formData.email,
+        password: formData.password
+      });
 
-      // Mock authentication logic for admin only
-      const isValidAdmin = formData.email === 'admin@pawsitivity.com' && formData.password === 'admin123';
-      console.log('Admin login attempt:', formData.email, isValidAdmin, formData.password);
-      if (isValidAdmin) {
+      if (result.success) {
         // Login via context
         login({
-          email: formData.email,
-          userType: 'admin',
-          isAuthenticated: true
+          email: result.user.email,
+          userType: result.user.userType,
+          role: result.user.role,
+          token: result.token
         });
 
         // Redirect to admin dashboard
         navigate('/admin/dashboard');
       } else {
-        setErrors({ submit: 'Invalid admin credentials. Please try again.' });
+        setErrors({ submit: result.message || 'Invalid admin credentials. Please try again.' });
       }
     } catch (error) {
+      console.error('Admin login error:', error);
       setErrors({ submit: 'Login failed. Please try again.' });
     } finally {
       setIsLoading(false);

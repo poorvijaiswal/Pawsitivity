@@ -40,32 +40,22 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
+
+
+
   // Login function
   const login = (userData) => {
-    localStorage.setItem('pawsitivity_user', JSON.stringify({
+    const userWithAuth = {
       ...userData,
       isAuthenticated: true,
-    }));
-
+    };
+    
+    localStorage.setItem('pawsitivity_user', JSON.stringify(userWithAuth));
+    
     setAuthState({
       isLoggedIn: true,
       userType: userData.userType,
-      user: userData,
-      loading: false,
-    });
-  };
-
-  // Signup function
-  const signup = (userData) => {
-    localStorage.setItem('pawsitivity_user', JSON.stringify({
-      ...userData,
-      isAuthenticated: true,
-    }));
-
-    setAuthState({
-      isLoggedIn: true,
-      userType: userData.userType,
-      user: userData,
+      user: userWithAuth,
       loading: false,
     });
   };
@@ -87,7 +77,6 @@ export function AuthProvider({ children }) {
       value={{
         ...authState,
         login,
-        signup,
         logout,
       }}
     >

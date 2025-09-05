@@ -66,6 +66,29 @@ export const login = async (credentials) => {
   }
 };
 
+// Admin login function
+export const adminLogin = async (credentials) => {
+  try {
+    const response = await API_URL.post('/admin/login', credentials);
+    
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token);
+    }
+    
+    return {
+      success: true,
+      token: response.data.token,
+      user: response.data.user,
+      message: response.data.message
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Admin login failed'
+    };
+  }
+};
+
 export const logout = () => {
   localStorage.removeItem('token');
 };
