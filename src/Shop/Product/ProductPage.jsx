@@ -21,6 +21,12 @@ const ProductPage = () => {
             return [];
         }
     });
+    const [selectedColorIdx, setSelectedColorIdx] = useState(0);
+    const [selectedSecondaryIdx, setSelectedSecondaryIdx] = useState(0); // For secondary image preview
+    const [showSecondaryPreview, setShowSecondaryPreview] = useState(false);
+    const [selectedVideoIdx, setSelectedVideoIdx] = useState(0);
+    const [showVideoPreview, setShowVideoPreview] = useState(false);
+    const [selectedSlideIdx, setSelectedSlideIdx] = useState(0);
 
     useEffect(() => {
         const loadProduct = async () => {
@@ -31,6 +37,7 @@ const ProductPage = () => {
             setProduct(foundProduct);
             setLoading(false);
             setSelectedImage(0);
+            setSelectedColorIdx(0); // Reset color selection on product change
         };
 
         loadProduct();
@@ -127,6 +134,33 @@ const ProductPage = () => {
         );
     }
 
+    // Color variants and secondary images
+    const colorVariants = product.colorVariants || [];
+    const secondaryImages = product.secondaryImages || [];
+    const productVideos = product.videos || [];
+
+    // Build slider items: primary images (color variants), secondary images, videos
+    const sliderItems = [
+        ...colorVariants.map(variant => ({
+            type: 'primary',
+            src: variant.image,
+            label: variant.color
+        })),
+        ...secondaryImages.map(img => ({
+            type: 'secondary',
+            src: img,
+            label: 'Secondary'
+        })),
+        ...productVideos.map(video => ({
+            type: 'video',
+            src: video,
+            label: 'Video'
+        }))
+    ];
+
+    // Show color variant selector only if there are color variants
+    const showColorSelector = colorVariants.length > 0;
+
     // Cart count for icon
     const cartCount = cart.length;
 
@@ -166,30 +200,58 @@ const ProductPage = () => {
                 </button>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-10">
-                    {/* Product Images */}
+                    {/* Product Images & Slider */}
                     <div className="space-y-4">
-                        <div className="aspect-square bg-white rounded-lg overflow-hidden shadow-lg w-full max-w-md mx-auto">
-                            <img
-                                src={product.images ? product.images[selectedImage] : product.image}
-                                alt={product.name}
-                                className="w-full h-full object-cover"
-                            />
-                        </div>
-                        {product.images && product.images.length > 1 && (
-                            <div className="flex space-x-2 overflow-x-auto justify-center">
-                                {product.images.map((img, index) => (
+                        {/* Color Variant Selector */}
+                        {showColorSelector && (
+                            <div className="mb-4 flex gap-2 flex-wrap">
+                                <span className="font-medium text-sm mr-2">Color:</span>
+                                {colorVariants.map((variant, idx) => (
                                     <button
-                                        key={index}
-                                        onClick={() => setSelectedImage(index)}
-                                        className={`flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 ${
-                                            selectedImage === index ? 'border-orange-500' : 'border-gray-200'
+                                        key={idx}
+                                        onClick={() => setSelectedSlideIdx(idx)}
+                                        className={`px-3 py-1 rounded-lg border font-medium text-xs sm:text-sm transition-all ${
+                                            selectedSlideIdx === idx
+                                                ? 'bg-orange-500 text-white border-orange-500'
+                                                : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-orange-50 hover:text-orange-600'
                                         }`}
                                     >
-                                        <img src={img} alt={`View ${index + 1}`} className="w-full h-full object-cover" />
+                                        {variant.color}
                                     </button>
                                 ))}
                             </div>
                         )}
+
+                        {/* Slider */}
+                        <div className="relative w-full max-w-md mx-auto">
+                            <div className="aspect-square bg-white rounded-lg overflow-hidden shadow-lg flex items-center justify-center">
+                                {sliderItems.length > 0 && sliderItems[selectedSlideIdx]?.type === 'video' ? (
+                                    <video
+                                        src={sliderItems[selectedSlideIdx].src}
+                                        controls
+                                        className="w-full h-full object-cover rounded-lg bg-black"
+                                    />
+                                ) : (
+                                    <img
+                                        src={sliderItems.length > 0 ? sliderItems[selectedSlideIdx].src : ''}
+                                        alt={sliderItems.length > 0 ? sliderItems[selectedSlideIdx].label : product.name}
+                                        className="w-full h-full object-cover"
+                                    />
+                                )}
+                            </div>
+                            {/* Slider Controls */}
+                            <div className="flex justify-center gap-2 mt-4">
+                                {sliderItems.map((item, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => setSelectedSlideIdx(idx)}
+                                        className={`w-4 h-4 rounded-full border-2 ${selectedSlideIdx === idx ? 'bg-orange-500 border-orange-500' : 'bg-gray-200 border-gray-300'} transition-all`}
+                                        aria-label={item.label}
+                                        style={{ outline: 'none' }}
+                                    />
+                                ))}
+                            </div>
+                        </div>
                     </div>
 
                     {/* Product Info */}
@@ -338,6 +400,7 @@ const ProductPage = () => {
                                         onClick={() => setQuantity(Math.min(product.stockCount, quantity + 1))}
                                         className="px-3 py-2 hover:bg-gray-100"
                                     >
+
                                         +
                                     </button>
                                 </div>

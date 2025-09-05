@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaArrowLeft, FaTimes, FaUpload, FaImage } from 'react-icons/fa';
 import { useAuth } from '../Auth/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import OrdersManager from './OrdersManager';
+import AnalyticsManager from './AnalyticsManager';
 
 // Enhanced products data with complete structure
 const initialProducts = [
@@ -52,9 +54,25 @@ export default function AdminDashboard() {
   const [currentTab, setCurrentTab] = useState('products');
   const [selectedImages, setSelectedImages] = useState([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState([]);
+  const [offers, setOffers] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('pawsitivity_topOffers')) || [];
+    } catch {
+      return [];
+    }
+  });
+  const [newOffer, setNewOffer] = useState('');
+  const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
+  const [editOfferIndex, setEditOfferIndex] = useState(null);
 
   // Add state to track specification entries with stable IDs
   const [specificationEntries, setSpecificationEntries] = useState([]);
+
+  // New state for color variants and secondary images
+  const [colorVariants, setColorVariants] = useState([]);
+  const [secondaryImages, setSecondaryImages] = useState([]);
+  const [secondaryImageFiles, setSecondaryImageFiles] = useState([]);
+  const [variantImageFiles, setVariantImageFiles] = useState({}); // { color: File }
 
   useEffect(() => {
     if (!loading && (!isLoggedIn || user?.userType !== 'admin')) {
@@ -93,6 +111,15 @@ export default function AdminDashboard() {
     }
   }, [selectedProduct?.id]); // Only re-run when product ID changes
 
+  useEffect(() => {
+    if (selectedProduct) {
+      setColorVariants(selectedProduct.colorVariants || []);
+      setSecondaryImages(selectedProduct.secondaryImages || []);
+      setSecondaryImageFiles([]);
+      setVariantImageFiles({});
+    }
+  }, [selectedProduct?.id]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -112,18 +139,22 @@ export default function AdminDashboard() {
   const emptyProduct = {
     id: null,
     name: '',
-    author: 'Pawsitivity',
-    rating: 5,
+    author: '',
+    rating: 0,
     reviewCount: 0,
-    format: 'Single Collar',
-    category: '',
+    format: '',
     price: 0,
-    stockCount: 0,
-    images: [],
+    originalPrice: 0,
     inStock: true,
+    stockCount: 0,
+    category: '',
     description: '',
     features: [''],
-    specifications: {}
+    specifications: {},
+    benefits: [''],
+    colorVariants: [], // [{ color, image }]
+    secondaryImages: [], // [url, url]
+    videos: []
   };
 
   // Handle image selection
@@ -187,9 +218,11 @@ export default function AdminDashboard() {
       ? imagePreviewUrls 
       : selectedProduct.images || [];
     
+    // Save colorVariants and secondaryImages
     const productToSave = {
       ...selectedProduct,
-      images: imageUrls,
+      colorVariants,
+      secondaryImages,
       inStock: selectedProduct.stockCount > 0,
       features: selectedProduct.features.filter(f => f.trim() !== ''),
       specifications
@@ -346,6 +379,84 @@ export default function AdminDashboard() {
     setSpecificationEntries(prev => prev.filter(entry => entry.id !== id));
   };
 
+  // Offer management handlers
+  const handleAddOffer = () => {
+    const trimmed = newOffer.trim().slice(0, 55);
+    if (trimmed && !offers.includes(trimmed)) {
+      const updated = [...offers, trimmed];
+      setOffers(updated);
+      localStorage.setItem('pawsitivity_topOffers', JSON.stringify(updated));
+      window.dispatchEvent(new Event('pawsitivity_topOffers_updated'));
+      setNewOffer('');
+      setIsOfferModalOpen(false);
+    }
+  };
+
+  const handleEditOffer = (index) => {
+    setEditOfferIndex(index);
+    setNewOffer(offers[index]);
+    setIsOfferModalOpen(true);
+  };
+
+  const handleSaveEditedOffer = () => {
+    const trimmed = newOffer.trim().slice(0, 55);
+    if (trimmed) {
+      const updated = offers.map((offer, idx) =>
+        idx === editOfferIndex ? trimmed : offer
+      );
+      setOffers(updated);
+      localStorage.setItem('pawsitivity_topOffers', JSON.stringify(updated));
+      window.dispatchEvent(new Event('pawsitivity_topOffers_updated'));
+      setNewOffer('');
+      setEditOfferIndex(null);
+      setIsOfferModalOpen(false);
+    }
+  };
+
+  const handleDeleteOffer = (index) => {
+    if (window.confirm('Delete this offer?')) {
+      const updated = offers.filter((_, idx) => idx !== index);
+      setOffers(updated);
+      localStorage.setItem('pawsitivity_topOffers', JSON.stringify(updated));
+      window.dispatchEvent(new Event('pawsitivity_topOffers_updated'));
+    }
+  };
+
+  // Add missing color variant handlers
+  const handleAddColorVariant = () => {
+    setColorVariants(prev => [...prev, { color: '', image: '' }]);
+  };
+
+  const handleRemoveColorVariant = (idx) => {
+    setColorVariants(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleColorVariantChange = (idx, field, value) => {
+    setColorVariants(prev =>
+      prev.map((v, i) => i === idx ? { ...v, [field]: value } : v)
+    );
+  };
+
+  const handleVariantImageUpload = (idx, file) => {
+    const url = URL.createObjectURL(file);
+    setColorVariants(prev =>
+      prev.map((v, i) => i === idx ? { ...v, image: url } : v)
+    );
+    setVariantImageFiles(prev => ({ ...prev, [idx]: file }));
+  };
+
+  const handleSecondaryImagesUpload = (e) => {
+    const files = Array.from(e.target.files);
+    const urls = files.map(file => URL.createObjectURL(file));
+    setSecondaryImages(urls);
+    setSecondaryImageFiles(files);
+  };
+
+  const handleRemoveSecondaryImage = (idx) => {
+    setSecondaryImages(prev => prev.filter((_, i) => i !== idx));
+    setSecondaryImageFiles(prev => prev.filter((_, i) => i !== idx));
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Simplified header without heavy gradients */}
@@ -386,11 +497,11 @@ export default function AdminDashboard() {
 
       {/* Main Content */}
       <div className="container px-2 py-4 mx-auto sm:px-4 sm:py-8">
-        {/* Responsive Tabs - horizontal scroll removed */}
+        {/* Responsive Tabs */}
         <div className="mb-6 sm:mb-8">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200">
             <div className="flex overflow-x-auto scrollbar-hide">
-              {['products', 'categories', 'orders', 'customers', 'analytics'].map((tab) => (
+              {['products', 'categories', 'orders', 'analytics', 'offers'].map((tab) => (
                 <button
                   key={tab}
                   className={`flex-shrink-0 px-4 py-3 text-sm font-medium transition-all whitespace-nowrap border-b-2 sm:px-6 sm:py-4 sm:text-base ${
@@ -637,8 +748,61 @@ export default function AdminDashboard() {
           </div>
         )}
 
+        {/* Top Offers Management Tab */}
+        {currentTab === 'offers' && (
+          <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+              <div>
+                <h2 className="text-xl font-bold text-gray-800 sm:text-2xl">Top Offers Management</h2>
+                <p className="text-sm text-gray-600 sm:text-base">Add, edit, or remove offers for the homepage carousel. (Max 55 characters each)</p>
+              </div>
+              <button
+                onClick={() => { setNewOffer(''); setEditOfferIndex(null); setIsOfferModalOpen(true); }}
+                className="flex items-center px-4 py-2 text-sm text-white bg-yellow-600 rounded-lg hover:bg-yellow-700 shadow-md transition-all"
+              >
+                <FaPlus className="mr-2" />
+                Add Offer
+              </button>
+            </div>
+            <div className="space-y-4">
+              {offers.length === 0 && (
+                <div className="text-gray-500 text-center py-8">No offers added yet.</div>
+              )}
+              {offers.map((offer, idx) => (
+                <div key={idx} className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
+                  <span className="text-gray-800 text-sm font-medium break-all">{offer}</span>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleEditOffer(idx)}
+                      className="px-3 py-1 text-xs bg-blue-50 text-blue-700 rounded hover:bg-blue-100"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteOffer(idx)}
+                      className="px-3 py-1 text-xs bg-red-50 text-red-700 rounded hover:bg-red-100"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Orders Tab */}
+        {currentTab === 'orders' && (
+          <OrdersManager />
+        )}
+
+        {/* Analytics Tab */}
+        {currentTab === 'analytics' && (
+          <AnalyticsManager />
+        )}
+
         {/* Other tabs content - simplified */}
-        {['orders', 'customers', 'analytics'].map((tab) => (
+        {['orders', 'analytics'].map((tab) => (
           currentTab === tab && (
             <div key={tab} className="p-8 text-center bg-white rounded-lg shadow-lg border border-gray-200 sm:p-12 sm:py-20">
               <div className="text-gray-300 mb-6">
@@ -673,7 +837,7 @@ export default function AdminDashboard() {
               </h3>
               <button
                 onClick={() => setIsFormOpen(false)}
-                className="p-2 text-gray-500 bg-white rounded-lg hover:bg-gray-100 hover:text-gray-700 transition-colors"
+                className="p-2 text-gray-500 bg-gray-100 rounded-lg hover:bg-gray-200 hover:text-gray-700 transition-colors"
               >
                 <FaTimes className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
@@ -684,6 +848,7 @@ export default function AdminDashboard() {
               <form onSubmit={handleSaveProduct} className="p-4 space-y-6 sm:p-8 sm:space-y-8">
                 {/* Basic Information */}
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                  {/* Product Name */}
                   <div>
                     <label className="block mb-2 text-sm font-medium text-gray-700">Product Name *</label>
                     <input
@@ -695,6 +860,7 @@ export default function AdminDashboard() {
                       required
                     />
                   </div>
+                  {/* Author */}
                   <div>
                     <label className="block mb-2 text-sm font-medium text-gray-700">Author</label>
                     <input
@@ -705,21 +871,7 @@ export default function AdminDashboard() {
                       className="w-full px-3 py-2 border border-yellow-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
                     />
                   </div>
-                  <div>
-                    <label className="block mb-2 text-sm font-medium text-gray-700">Category *</label>
-                    <select
-                      name="category"
-                      value={selectedProduct.category}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-yellow-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                      required
-                    >
-                      <option value="">Select Category</option>
-                      {categories.map(category => (
-                        <option key={category} value={category}>{category}</option>
-                      ))}
-                    </select>
-                  </div>
+                  {/* Format */}
                   <div>
                     <label className="block mb-2 text-sm font-medium text-gray-700">Format</label>
                     <input
@@ -730,6 +882,7 @@ export default function AdminDashboard() {
                       className="w-full px-3 py-2 border border-yellow-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
                     />
                   </div>
+                  {/* Price */}
                   <div>
                     <label className="block mb-2 text-sm font-medium text-gray-700">Price (₹) *</label>
                     <input
@@ -743,6 +896,20 @@ export default function AdminDashboard() {
                       required
                     />
                   </div>
+                  {/* Original Price */}
+                  <div>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">Original Price</label>
+                    <input
+                      type="number"
+                      name="originalPrice"
+                      min="0"
+                      step="0.01"
+                      value={selectedProduct.originalPrice}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-yellow-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                    />
+                  </div>
+                  {/* Stock Count */}
                   <div>
                     <label className="block mb-2 text-sm font-medium text-gray-700">Stock Count *</label>
                     <input
@@ -755,6 +922,7 @@ export default function AdminDashboard() {
                       required
                     />
                   </div>
+                  {/* Rating */}
                   <div>
                     <label className="block mb-2 text-sm font-medium text-gray-700">Rating</label>
                     <input
@@ -768,6 +936,7 @@ export default function AdminDashboard() {
                       className="w-full px-3 py-2 border border-yellow-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
                     />
                   </div>
+                  {/* Review Count */}
                   <div>
                     <label className="block mb-2 text-sm font-medium text-gray-700">Review Count</label>
                     <input
@@ -778,6 +947,33 @@ export default function AdminDashboard() {
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-yellow-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
                     />
+                  </div>
+                  {/* Category */}
+                  <div>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">
+                      Category *
+                      <button
+                        type="button"
+                        onClick={() => setIsCategoryModalOpen(true)}
+                        className="ml-2 px-2 py-1 text-yellow-700 border border-yellow-300 rounded-md hover:bg-yellow-50"
+                        title="Add new category"
+                        style={{ verticalAlign: 'middle', display: 'inline-block' }}
+                      >
+                        <FaPlus />
+                      </button>
+                    </label>
+                    <select
+                      name="category"
+                      value={selectedProduct.category}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-yellow-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                      required
+                    >
+                      <option value="">Select Category</option>
+                      {categories.map(category => (
+                        <option key={category} value={category}>{category}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
@@ -795,9 +991,53 @@ export default function AdminDashboard() {
 
                 {/* Enhanced Image Upload Section */}
                 <div className="col-span-2">
-                  <label className="block mb-2 text-sm font-medium text-gray-700">Product Images</label>
-                  
-                  {/* Image Upload Area */}
+                  <label className="block mb-2 text-sm font-medium text-gray-700">Primary Image</label>
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    {colorVariants.map((variant, idx) => (
+                      <div key={idx} className="flex flex-col sm:flex-row gap-2 items-center bg-yellow-50 p-3 rounded-lg">
+                        <input
+                          type="text"
+                          value={variant.color}
+                          onChange={e => handleColorVariantChange(idx, 'color', e.target.value)}
+                          placeholder="Color name (e.g. Yellow, Red)"
+                          className="flex-1 px-3 py-2 border border-yellow-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                        />
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <span className="text-xs text-gray-700">Primary Image</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={e => handleVariantImageUpload(idx, e.target.files[0])}
+                            className="hidden"
+                          />
+                          <span className="px-2 py-1 bg-yellow-200 rounded text-xs">Upload</span>
+                        </label>
+                        {variant.image && (
+                          <img src={variant.image} alt={variant.color} className="w-12 h-12 object-cover rounded border" />
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveColorVariant(idx)}
+                          className="text-red-600 hover:text-red-800 p-2"
+                        >
+                          <FaTimes />
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={handleAddColorVariant}
+                      className="flex items-center px-3 py-2 text-sm text-yellow-700 border border-yellow-300 rounded-md hover:bg-yellow-50"
+                    >
+                      <FaPlus className="w-4 h-4 mr-2" />
+                      Add Color Variant
+                    </button>
+                  </div>
+                </div>
+
+                {/* Secondary Images Section */}
+                <div className="col-span-2">
+                  <label className="block mb-2 text-sm font-medium text-gray-700">Secondary Images (shared for all variants)</label>
                   <div className="mb-4">
                     <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-yellow-300 border-dashed rounded-lg cursor-pointer bg-yellow-50 hover:bg-yellow-100">
                       <div className="flex flex-col items-center justify-center pt-5 pb-6">
@@ -811,25 +1051,23 @@ export default function AdminDashboard() {
                         type="file"
                         multiple
                         accept="image/*"
-                        onChange={handleImageSelect}
+                        onChange={handleSecondaryImagesUpload}
                         className="hidden"
                       />
                     </label>
                   </div>
-
-                  {/* Image Previews */}
-                  {imagePreviewUrls.length > 0 && (
+                  {secondaryImages.length > 0 && (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-4">
-                      {imagePreviewUrls.map((url, index) => (
+                      {secondaryImages.map((url, index) => (
                         <div key={index} className="relative group">
                           <img
                             src={url}
-                            alt={`Preview ${index + 1}`}
+                            alt={`Secondary ${index + 1}`}
                             className="w-full h-24 object-cover rounded-lg border border-gray-300"
                           />
                           <button
                             type="button"
-                            onClick={() => removeImage(index)}
+                            onClick={() => handleRemoveSecondaryImage(index)}
                             className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                           >
                             <FaTimes className="w-3 h-3" />
@@ -838,137 +1076,22 @@ export default function AdminDashboard() {
                       ))}
                     </div>
                   )}
-
-                  {/* Existing Images (for edit mode) */}
-                  {selectedProduct.images && selectedProduct.images.length > 0 && imagePreviewUrls.length === 0 && (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-4">
-                      {selectedProduct.images.map((url, index) => (
-                        <div key={index} className="relative">
-                          <img
-                            src={url}
-                            alt={`Product ${index + 1}`}
-                            className="w-full h-24 object-cover rounded-lg border border-gray-300"
-                          />
-                          <span className="absolute bottom-1 left-1 bg-black bg-opacity-50 text-white text-xs px-1 rounded">
-                            Current
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
 
-                {/* Enhanced Features Section */}
+                {/* Videos Section */}
                 <div className="col-span-2">
-                  <label className="block mb-2 text-sm font-medium text-gray-700">Features</label>
-                  <div className="space-y-2">
-                    {selectedProduct.features?.map((feature, index) => (
-                      <div key={index} className="flex items-center space-x-2">
-                        <input
-                          type="text"
-                          value={feature}
-                          onChange={(e) => handleArrayInputChange(index, e.target.value, 'features')}
-                          className="flex-1 px-3 py-2 border border-yellow-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                          placeholder="Enter feature"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeArrayItem(index, 'features')}
-                          className="text-red-600 hover:text-red-800 p-2"
-                        >
-                          <FaTimes />
-                        </button>
-                      </div>
-                    ))}
-                    <button
-                      type="button"
-                      onClick={() => addArrayItem('features')}
-                      className="flex items-center px-3 py-2 text-sm text-yellow-700 border border-yellow-300 rounded-md hover:bg-yellow-50"
-                    >
-                      <FaPlus className="w-4 h-4 mr-2" />
-                      Add Feature
-                    </button>
-                  </div>
-                </div>
-
-                {/* Fixed Specifications Section */}
-                <div className="col-span-2">
-                  <label className="block mb-2 text-sm font-medium text-gray-700">Specifications</label>
-                  <div className="space-y-3">
-                    {specificationEntries.map((entry) => (
-                      <div key={entry.id} className="grid grid-cols-1 sm:grid-cols-5 gap-2 items-center bg-gray-50 p-3 rounded-lg">
-                        <div className="sm:col-span-2">
-                          <input
-                            type="text"
-                            value={entry.key}
-                            onChange={(e) => handleSpecificationEntryChange(entry.id, 'key', e.target.value)}
-                            className="w-full px-3 py-2 border border-yellow-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                            placeholder="Specification name"
-                          />
-                        </div>
-                        <div className="sm:col-span-2">
-                          <input
-                            type="text"
-                            value={entry.value}
-                            onChange={(e) => handleSpecificationEntryChange(entry.id, 'value', e.target.value)}
-                            className="w-full px-3 py-2 border border-yellow-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                            placeholder="Value"
-                          />
-                        </div>
-                        <div className="flex justify-center">
-                          <button
-                            type="button"
-                            onClick={() => removeSpecificationEntry(entry.id)}
-                            className="text-red-600 hover:text-red-800 p-2 hover:bg-red-50 rounded-md transition-colors"
-                          >
-                            <FaTimes />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                    
-                    {specificationEntries.length === 0 && (
-                      <div className="text-center py-4 text-gray-500 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                        No specifications added yet. Click "Add Specification" to get started.
-                      </div>
-                    )}
-                    
-                    <button
-                      type="button"
-                      onClick={addSpecificationEntry}
-                      className="flex items-center px-4 py-2 text-sm text-yellow-700 border border-yellow-300 rounded-md hover:bg-yellow-50 transition-colors"
-                    >
-                      <FaPlus className="w-4 h-4 mr-2" />
-                      Add Specification
-                    </button>
-                  </div>
-                </div>
-
-                {/* Enhanced Category Selection */}
-                <div>
-                  <label className="block mb-2 text-sm font-medium text-gray-700">Category *</label>
-                  <div className="flex space-x-2">
-                    <select
-                      name="category"
-                      value={selectedProduct.category}
-                      onChange={handleInputChange}
-                      className="flex-1 px-3 py-2 border border-yellow-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                      required
-                    >
-                      <option value="">Select Category</option>
-                      {categories.map(category => (
-                        <option key={category} value={category}>{category}</option>
-                      ))}
-                    </select>
-                    <button
-                      type="button"
-                      onClick={() => setIsCategoryModalOpen(true)}
-                      className="px-3 py-2 text-yellow-700 border border-yellow-300 rounded-md hover:bg-yellow-50"
-                      title="Add new category"
-                    >
-                      <FaPlus />
-                    </button>
-                  </div>
+                  <label className="block mb-2 text-sm font-medium text-gray-700">Product Videos (comma separated URLs)</label>
+                  <input
+                    type="text"
+                    name="videos"
+                    value={selectedProduct.videos.join(',')}
+                    onChange={e => setSelectedProduct({
+                      ...selectedProduct,
+                      videos: e.target.value.split(',').map(url => url.trim()).filter(Boolean)
+                    })}
+                    className="w-full px-3 py-2 border border-yellow-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                    placeholder="Paste video URLs separated by comma"
+                  />
                 </div>
 
                 {/* Enhanced Form Actions */}
@@ -1046,6 +1169,53 @@ export default function AdminDashboard() {
                   </button>
                 </div>
               </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+
+      {/* Offer Modal */}
+      {isOfferModalOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-white rounded-xl shadow-2xl w-full max-w-md border border-gray-200"
+          >
+            <div className="p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">
+                {editOfferIndex !== null ? 'Edit Offer' : 'Add New Offer'}
+              </h3>
+              <label className="block mb-2 text-sm font-medium text-gray-700">Offer Text (max 55 chars)</label>
+              <input
+                type="text"
+                value={newOffer}
+                onChange={e => setNewOffer(e.target.value.slice(0, 55))}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-all"
+                placeholder="Enter offer text"
+                maxLength={55}
+              />
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => { setIsOfferModalOpen(false); setNewOffer(''); setEditOfferIndex(null); }}
+                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={editOfferIndex !== null ? handleSaveEditedOffer : handleAddOffer}
+                  className="px-4 py-2 text-white bg-yellow-600 rounded-lg hover:bg-yellow-700 transition-all font-medium"
+                >
+                  {editOfferIndex !== null ? 'Save' : 'Add'}
+                </button>
+              </div>
+              <div className="text-xs text-gray-500 mt-2 text-right">{newOffer.length}/55</div>
             </div>
           </motion.div>
         </motion.div>

@@ -1,6 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+// Remove hardcoded topOffers, fetch from localStorage (set by admin)
+function getTopOffers() {
+  try {
+    const offers = JSON.parse(localStorage.getItem('pawsitivity_topOffers')) || [];
+    // Limit each offer to 55 characters
+    return offers.map(o => o.slice(0, 55));
+  } catch {
+    return [];
+  }
+}
+
 const slides = [
   {
     id: 1,
@@ -35,8 +46,11 @@ export default function HeroCarousel() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [offerIndex, setOfferIndex] = useState(0);
+  const [topOffers, setTopOffers] = useState(getTopOffers());
   const containerRef = useRef(null);
   const autoPlayRef = useRef(null);
+  const offerIntervalRef = useRef(null);
 
   // Auto-play functionality
   useEffect(() => {
@@ -50,6 +64,23 @@ export default function HeroCarousel() {
 
     return () => clearInterval(autoPlayRef.current);
   }, [isAutoPlaying]);
+
+  // Listen for admin updates to offers
+  useEffect(() => {
+    function handleOffersUpdate() {
+      setTopOffers(getTopOffers());
+    }
+    window.addEventListener('pawsitivity_topOffers_updated', handleOffersUpdate);
+    return () => window.removeEventListener('pawsitivity_topOffers_updated', handleOffersUpdate);
+  }, []);
+
+  // Offer auto-slide
+  useEffect(() => {
+    offerIntervalRef.current = setInterval(() => {
+      setOfferIndex((prev) => topOffers.length ? (prev + 1) % topOffers.length : 0);
+    }, 3500);
+    return () => clearInterval(offerIntervalRef.current);
+  }, [topOffers]);
 
   // Mouse tracking for parallax effect
   useEffect(() => {
@@ -88,6 +119,25 @@ export default function HeroCarousel() {
       onMouseEnter={() => setIsAutoPlaying(false)}
       onMouseLeave={() => setIsAutoPlaying(true)}
     >
+      {/* Top Offers Marquee */}
+      {topOffers.length > 0 && (
+        <div className="absolute top-0 left-0 w-full z-30">
+          <div className="relative w-full overflow-hidden bg-gradient-to-r from-yellow-300 via-yellow-200 to-yellow-400 py-2 px-2 sm:px-6 flex items-center">
+            <motion.div
+              key={offerIndex}
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ duration: 0.7, ease: "easeInOut" }}
+              className="whitespace-nowrap text-xs sm:text-sm md:text-base font-semibold text-yellow-900 flex items-center"
+              style={{ minWidth: '100%' }}
+            >
+              {topOffers[offerIndex]}
+            </motion.div>
+          </div>
+        </div>
+      )}
+
       <AnimatePresence mode="wait">
         <motion.div
           key={currentSlide}
@@ -101,7 +151,7 @@ export default function HeroCarousel() {
           }}
           exit={{ opacity: 0, scale: 0.9 }}
           transition={{ 
-            duration: 1.2,
+            duration: 2,
             ease: [0.25, 0.46, 0.45, 0.94]
           }}
         >
@@ -156,7 +206,7 @@ export default function HeroCarousel() {
       </AnimatePresence>
 
       {/* Responsive Content */}
-      <div className="relative z-10 flex items-center justify-center h-full">
+      <div className="relative z-10 flex items-center justify-center h-full pt-10 sm:pt-12">
         <div className="text-center max-w-2xl mx-auto px-3 sm:px-8 w-full">
           <AnimatePresence mode="wait">
             <motion.div

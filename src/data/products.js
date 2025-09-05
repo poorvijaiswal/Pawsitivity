@@ -5,18 +5,11 @@ export const categoryProducts = {
             id: 1, 
             name: 'QR-Enabled Reflective Collar (Pack of 5)', 
             author: 'Pawsitivity', 
-            rating: 5, 
+            rating: 4.2, 
             reviewCount: 120, 
             format: 'Pack of 5', 
-            price: 299, 
+            price: 249, 
             originalPrice: 399,
-            // Updated with actual collar images
-            image: '/src/assets/New collars QR code/pawelite multicolor.jpg', 
-            images: [
-                '/src/assets/New collars QR code/pawelite multicolor.jpg',
-                '/src/assets/New collars QR code/pawelite blue.jpg',
-                '/src/assets/New collars QR code/pawelite green.jpg'
-            ],
             inStock: true,
             stockCount: 45,
             category: 'Collars',
@@ -40,6 +33,20 @@ export const categoryProducts = {
                 'Increases nighttime visibility by 300%',
                 'Instant owner contact via QR scan',
                 'Durable construction lasts 2+ years'
+            ],
+            colorVariants: [
+                { color: 'Yellow', image: '/src/assets/New collars QR code/pawelite yellow.jpg' },
+                { color: 'Red', image: '/src/assets/New collars QR code/pawelite red.jpg' },
+                { color: 'Green', image: '/src/assets/New collars QR code/pawelite green.jpg' }
+            ],
+            secondaryImages: [
+                '/src/assets/New collars QR code/pawelite multicolor_side.jpg',
+                '/src/assets/New collars QR code/pawelite multicolor_qr.jpg'
+            ],
+            // Add public video URLs for demo
+            videos: [
+                'https://www.w3schools.com/html/mov_bbb.mp4',
+                'https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4'
             ]
         },
         {
@@ -51,12 +58,6 @@ export const categoryProducts = {
             format: 'Pack of 5',
             price: 399,
             originalPrice: 499,
-            image: '/src/assets/New collars QR code/pawelite navy blue.jpg',
-            images: [
-                '/src/assets/New collars QR code/pawelite navy blue.jpg',
-                '/src/assets/New collars QR code/pawelite orange.jpg',
-                '/src/assets/New collars QR code/pawelite red.jpg'
-            ],
             inStock: true,
             stockCount: 32,
             category: 'Collars',
@@ -80,6 +81,15 @@ export const categoryProducts = {
                 'Increases nighttime visibility by 400%',
                 'Extended scanning range',
                 'Premium construction lasts 3+ years'
+            ],
+            colorVariants: [
+                { color: 'Navy Blue', image: '/src/assets/New collars QR code/pawelite navy blue.jpg' },
+                { color: 'Orange', image: '/src/assets/New collars QR code/pawelite orange.jpg' },
+                { color: 'Red', image: '/src/assets/New collars QR code/pawelite red.jpg' }
+            ],
+            secondaryImages: [
+                '/src/assets/New collars QR code/pawelite navy blue_side.jpg',
+                '/src/assets/New collars QR code/pawelite navy blue_qr.jpg'
             ]
         },
         {
@@ -91,11 +101,6 @@ export const categoryProducts = {
             format: 'Pack of 5',
             price: 349,
             originalPrice: 449,
-            image: '/src/assets/New collars QR code/anti theft black.jpg',
-            images: [
-                '/src/assets/New collars QR code/anti theft black.jpg',
-                '/src/assets/New collars QR code/anti theft blue.jpg'
-            ],
             inStock: false,
             stockCount: 0,
             category: 'Collars',
@@ -119,6 +124,14 @@ export const categoryProducts = {
                 'Enhanced security',
                 'Reliable identification',
                 'Long-lasting durability'
+            ],
+            colorVariants: [
+                { color: 'Black', image: '/src/assets/New collars QR code/anti theft black.jpg' },
+                { color: 'Blue', image: '/src/assets/New collars QR code/anti theft blue.jpg' }
+            ],
+            secondaryImages: [
+                '/src/assets/New collars QR code/anti theft black_side.jpg',
+                '/src/assets/New collars QR code/anti theft black_qr.jpg'
             ]
         },
         {
@@ -129,7 +142,6 @@ export const categoryProducts = {
             reviewCount: 75,
             format: 'Pack of 5',
             price: 379,
-            image: '/src/assets/New collars QR code/anit theft multicolor.jpg',
             inStock: true,
             stockCount: 38,
             category: 'Collars',
@@ -147,7 +159,14 @@ export const categoryProducts = {
                 'Weight': '65g per collar',
                 'Waterproof Rating': 'IPX6',
                 'D-Ring': 'Stainless steel'
-            }
+            },
+            colorVariants: [
+                { color: 'Multicolor', image: '/src/assets/New collars QR code/anit theft multicolor.jpg' }
+            ],
+            secondaryImages: [
+                '/src/assets/New collars QR code/anit theft multicolor_side.jpg',
+                '/src/assets/New collars QR code/anit theft multicolor_qr.jpg'
+            ]
         },
         {
             id: 5,
@@ -157,7 +176,6 @@ export const categoryProducts = {
             reviewCount: 95,
             format: 'Single Collar',
             price: 149,
-            image: '/src/assets/New collars QR code/pawelite green.jpg',
             inStock: true,
             stockCount: 28,
             category: 'Collars',
@@ -175,7 +193,14 @@ export const categoryProducts = {
                 'Weight': '45g',
                 'Battery Life': '8-12 hours',
                 'Charging': 'USB-C'
-            }
+            },
+            colorVariants: [
+                { color: 'Green', image: '/src/assets/New collars QR code/pawelite green.jpg' }
+            ],
+            secondaryImages: [
+                '/src/assets/New collars QR code/pawelite green_side.jpg',
+                '/src/assets/New collars QR code/pawelite green_qr.jpg'
+            ]
         },
         {
             id: 9,
@@ -186,12 +211,6 @@ export const categoryProducts = {
             format: 'Pack of 3',
             price: 399,
             originalPrice: 499,
-            image: '/src/assets/New collars QR code/anti theft green.jpg',
-            images: [
-                '/src/assets/New collars QR code/anti theft green.jpg',
-                '/src/assets/New collars QR code/anti theft pink.jpg',
-                '/src/assets/New collars QR code/anti theft purple.jpg'
-            ],
             inStock: true,
             stockCount: 42,
             category: 'Collars',
@@ -215,6 +234,15 @@ export const categoryProducts = {
                 'Theft-resistant design',
                 'Multiple color options',
                 'Durable construction'
+            ],
+            colorVariants: [
+                { color: 'Green', image: '/src/assets/New collars QR code/anti theft green.jpg' },
+                { color: 'Pink', image: '/src/assets/New collars QR code/anti theft pink.jpg' },
+                { color: 'Purple', image: '/src/assets/New collars QR code/anti theft purple.jpg' }
+            ],
+            secondaryImages: [
+                '/src/assets/New collars QR code/anti theft green_side.jpg',
+                '/src/assets/New collars QR code/anti theft green_qr.jpg'
             ]
         },
         {
@@ -226,11 +254,6 @@ export const categoryProducts = {
             format: 'Pack of 2',
             price: 299,
             originalPrice: 359,
-            image: '/src/assets/New collars QR code/pawelite yellow.jpg',
-            images: [
-                '/src/assets/New collars QR code/pawelite yellow.jpg',
-                '/src/assets/New collars QR code/pawelite orange.jpg'
-            ],
             inStock: true,
             stockCount: 35,
             category: 'Collars',
@@ -254,6 +277,14 @@ export const categoryProducts = {
                 'Premium comfort fit',
                 'Extended durability',
                 'Enhanced safety features'
+            ],
+            colorVariants: [
+                { color: 'Yellow', image: '/src/assets/New collars QR code/pawelite yellow.jpg' },
+                { color: 'Orange', image: '/src/assets/New collars QR code/pawelite orange.jpg' }
+            ],
+            secondaryImages: [
+                '/src/assets/New collars QR code/pawelite yellow_side.jpg',
+                '/src/assets/New collars QR code/pawelite yellow_qr.jpg'
             ]
         },
         {
@@ -265,11 +296,6 @@ export const categoryProducts = {
             format: 'Pack of 2',
             price: 449,
             originalPrice: 549,
-            image: '/src/assets/New collars QR code/anittheft navy blue.jpg',
-            images: [
-                '/src/assets/New collars QR code/anittheft navy blue.jpg',
-                '/src/assets/New collars QR code/anti theft black (2).jpg'
-            ],
             inStock: true,
             stockCount: 28,
             category: 'Collars',
@@ -293,6 +319,14 @@ export const categoryProducts = {
                 'Maximum security',
                 'Discreet design',
                 'Heavy-duty durability'
+            ],
+            colorVariants: [
+                { color: 'Navy Blue', image: '/src/assets/New collars QR code/anittheft navy blue.jpg' },
+                { color: 'Black', image: '/src/assets/New collars QR code/anti theft black (2).jpg' }
+            ],
+            secondaryImages: [
+                '/src/assets/New collars QR code/anittheft navy blue_side.jpg',
+                '/src/assets/New collars QR code/anittheft navy blue_qr.jpg'
             ]
         },
         {
@@ -304,11 +338,6 @@ export const categoryProducts = {
             format: 'Pack of 2',
             price: 279,
             originalPrice: 329,
-            image: '/src/assets/New collars QR code/pawelite pink.jpg',
-            images: [
-                '/src/assets/New collars QR code/pawelite pink.jpg',
-                '/src/assets/New collars QR code/pawelite purple.jpg'
-            ],
             inStock: true,
             stockCount: 58,
             category: 'Collars',
@@ -332,6 +361,14 @@ export const categoryProducts = {
                 'Comfortable daily wear',
                 'Eye-catching colors',
                 'Perfect for photo sessions'
+            ],
+            colorVariants: [
+                { color: 'Pink', image: '/src/assets/New collars QR code/pawelite pink.jpg' },
+                { color: 'Purple', image: '/src/assets/New collars QR code/pawelite purple.jpg' }
+            ],
+            secondaryImages: [
+                '/src/assets/New collars QR code/pawelite pink_side.jpg',
+                '/src/assets/New collars QR code/pawelite pink_qr.jpg'
             ]
         }
     ],
@@ -345,11 +382,6 @@ export const categoryProducts = {
             format: 'Single Tag',
             price: 99,
             originalPrice: 129,
-            image: '/src/assets/New collars QR code/pawelite multicolor.jpg',
-            images: [
-                '/src/assets/New collars QR code/pawelite multicolor.jpg',
-                '/src/assets/New collars QR code/pawelite blue.jpg'
-            ],
             inStock: true,
             stockCount: 67,
             category: 'Tags',
@@ -373,6 +405,14 @@ export const categoryProducts = {
                 'Medical emergency access',
                 'Waterproof durability',
                 'Lightweight comfort'
+            ],
+            colorVariants: [
+                { color: 'Multicolor', image: '/src/assets/New collars QR code/pawelite multicolor.jpg' },
+                { color: 'Blue', image: '/src/assets/New collars QR code/pawelite blue.jpg' }
+            ],
+            secondaryImages: [
+                '/src/assets/New collars QR code/pawelite multicolor_side.jpg',
+                '/src/assets/New collars QR code/pawelite multicolor_qr.jpg'
             ]
         },
         {
@@ -383,7 +423,6 @@ export const categoryProducts = {
             reviewCount: 180,
             format: 'Single Tag',
             price: 129,
-            image: '/src/assets/New collars QR code/pawelite pink.jpg',
             inStock: true,
             stockCount: 45,
             category: 'Tags',
@@ -414,11 +453,6 @@ export const categoryProducts = {
             format: 'Pack of 2',
             price: 399,
             originalPrice: 499,
-            image: '/src/assets/New collars QR code/anti theft black.jpg',
-            images: [
-                '/src/assets/New collars QR code/anti theft black.jpg',
-                '/src/assets/New collars QR code/anti theft blue.jpg'
-            ],
             inStock: true,
             stockCount: 25,
             category: 'Cattle',
@@ -442,6 +476,14 @@ export const categoryProducts = {
                 'Reduced vehicle collisions',
                 'Durable construction',
                 'Easy identification'
+            ],
+            colorVariants: [
+                { color: 'Black', image: '/src/assets/New collars QR code/anti theft black.jpg' },
+                { color: 'Blue', image: '/src/assets/New collars QR code/anti theft blue.jpg' }
+            ],
+            secondaryImages: [
+                '/src/assets/New collars QR code/anti theft black_side.jpg',
+                '/src/assets/New collars QR code/anti theft black_qr.jpg'
             ]
         },
         {
@@ -452,7 +494,6 @@ export const categoryProducts = {
             reviewCount: 35,
             format: 'Single Collar',
             price: 899,
-            image: '/src/assets/New collars QR code/antitheft yellow.jpg',
             inStock: true,
             stockCount: 15,
             category: 'Cattle',
@@ -470,10 +511,19 @@ export const categoryProducts = {
                 'Weight': '200g',
                 'Battery Life': '30 days',
                 'GPS Accuracy': '3-5 meters'
-            }
+            },
+            colorVariants: [
+                { color: 'Yellow', image: '/src/assets/New collars QR code/antitheft yellow.jpg' }
+            ],
+            secondaryImages: [
+                '/src/assets/New collars QR code/antitheft yellow_side.jpg',
+                '/src/assets/New collars QR code/antitheft yellow_qr.jpg'
+            ]
         }
     ]
 };
+
+// (Duplicate memoized functions removed to fix redeclaration error)
 
 // Memoized functions for better performance
 export const getAllProducts = () => {
