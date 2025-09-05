@@ -566,9 +566,9 @@
 // (Duplicate memoized functions removed to fix redeclaration error)
 
 // Memoized functions for better performance
-// export const getAllProducts = () => {
-//     return Object.values(categoryProducts).flat();
-// };
+export const getAllProducts = () => {
+    return Object.values(categoryProducts).flat();
+};
 
 // // Memoized functions for better performance
 // export const getAllProducts = () => {
