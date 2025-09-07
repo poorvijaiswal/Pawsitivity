@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getAddresses } from "../Apis/auth";
 
 function getCartFromStorage() {
   try {
@@ -10,20 +11,36 @@ function getCartFromStorage() {
   }
 }
 
-function getAddressFromStorage() {
-  try {
-    const address = localStorage.getItem("pawsitivity_address");
-    return address ? JSON.parse(address) : null;
-  } catch {
-    return null;
-  }
-}
+
 
 export default function CheckoutPage() {
   const [cart, setCart] = useState(getCartFromStorage());
-  const [address, setAddress] = useState(getAddressFromStorage());
+  const [address, setAddress] = useState(null);
   const [processing, setProcessing] = useState(false);
+  const [addressLoading, setAddressLoading] = useState(true);
+  const [addressError, setAddressError] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const userId = JSON.parse(localStorage.getItem("user"))?._id;
+    if (userId) {
+      getAddresses(userId).then((result) => {
+        if (result.success && result.data.addresses && result.data.addresses.length > 0) {
+          // Use the most recent address
+          setAddress(result.data.addresses[result.data.addresses.length - 1]);
+          setAddressError(null);
+        } else {
+          setAddress(null);
+          setAddressError("No address found.");
+        }
+        setAddressLoading(false);
+      });
+    } else {
+      setAddress(null);
+      setAddressError("User not logged in.");
+      setAddressLoading(false);
+    }
+  }, []);
 
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
@@ -31,7 +48,6 @@ export default function CheckoutPage() {
     setProcessing(true);
     setTimeout(() => {
       localStorage.removeItem("pawsitivity_cart");
-      localStorage.removeItem("pawsitivity_address");
       setProcessing(false);
       navigate("/shop");
       alert("Payment successful! Thank you for your order.");
@@ -60,17 +76,23 @@ export default function CheckoutPage() {
           {/* Address */}
           <div>
             <h2 className="text-lg font-semibold mb-2 text-gray-800">Shipping Address</h2>
-            {address ? (
+            {addressLoading ? (
+              <div className="text-gray-500">Loading address...</div>
+            ) : address ? (
               <div className="bg-gray-50 rounded-lg p-4 text-gray-700 text-sm">
-                <div><span className="font-semibold">Name:</span> {address.name}</div>
-                <div><span className="font-semibold">Phone:</span> {address.phone}</div>
-                <div><span className="font-semibold">Address:</span> {address.address}</div>
+                <div><span className="font-semibold">Name:</span> {address.fullName}</div>
+                <div><span className="font-semibold">Phone:</span> {address.phoneNumber}</div>
+                <div><span className="font-semibold">Email:</span> {address.email}</div>
+                <div><span className="font-semibold">Address:</span> {address.street}{address.landmark ? `, ${address.landmark}` : ""}</div>
                 <div>
-                  <span className="font-semibold">City/State/Pincode:</span> {address.city}, {address.state} - {address.pincode}
+                  <span className="font-semibold">City/State/Pincode:</span> {address.city}, {address.state} - {address.pinCode}
                 </div>
+                <div><span className="font-semibold">Country:</span> {address.country}</div>
+                {address.company && <div><span className="font-semibold">Company:</span> {address.company}</div>}
+                {address.deliveryInstructions && <div><span className="font-semibold">Instructions:</span> {address.deliveryInstructions}</div>}
               </div>
             ) : (
-              <div className="text-red-600">No address found.</div>
+              <div className="text-red-600">{addressError || "No address found."}</div>
             )}
           </div>
           {/* Order Summary */}

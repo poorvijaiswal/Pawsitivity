@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getAllProducts, getProductById } from '../Apis/product_api'; // Import both API functions
+import { getAllProducts, getProductById } from '../Apis/product_api'; 
 import { FaShoppingCart, FaTimes, FaStar } from "react-icons/fa";
+import { useCart } from '../Context/CartContext';
 
 // Enhanced Star Rating Component with memoization
 const StarRating = React.memo(({ rating, reviewCount }) => (
@@ -226,6 +227,7 @@ const ProductDetailsModal = ({ isOpen, onClose, productId, onAddToCart }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [quantity, setQuantity] = useState(1);
+    const { cart, addToCart } = useCart();
 
     useEffect(() => {
         const fetchProductDetails = async () => {
@@ -457,31 +459,21 @@ export default function BestsellersPage() {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [cart, setCart] = useState(() => {
-        // Load cart from localStorage on mount
-        try {
-            const stored = localStorage.getItem("pawsitivity_cart");
-            return stored ? JSON.parse(stored) : [];
-        } catch {
-            return [];
-        }
-    });
     const [showCartNotification, setShowCartNotification] = useState(false);
     const [selectedProductId, setSelectedProductId] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const notificationTimeout = useRef(null);
 
     const navigate = useNavigate();
+    const { cart, addToCart, updateQuantity, removeFromCart } = useCart();
 
     // Fetch products from backend
     useEffect(() => {
         const fetchProducts = async () => {
             setLoading(true);
             setError(null);
-            
             try {
                 const response = await getAllProducts();
-                
                 if (response.success) {
                     setProducts(response.products || response.data || []);
                 } else {
@@ -494,7 +486,6 @@ export default function BestsellersPage() {
                 setLoading(false);
             }
         };
-
         fetchProducts();
     }, []);
 
@@ -513,37 +504,14 @@ export default function BestsellersPage() {
         return products.filter(product => product.category === activeCategory);
     }, [products, activeCategory]);
 
-    // Sync cart state with localStorage and listen for cart updates
-    useEffect(() => {
-        const syncCart = () => {
-            try {
-                const stored = localStorage.getItem("pawsitivity_cart");
-                setCart(stored ? JSON.parse(stored) : []);
-            } catch {
-                setCart([]);
-            }
-        };
-        window.addEventListener("pawsitivity_cart_updated", syncCart);
-        // Also sync on mount in case localStorage changed elsewhere
-        syncCart();
-        return () => window.removeEventListener("pawsitivity_cart_updated", syncCart);
-    }, []);
-
     // Optimized add to cart handler with useCallback
     const handleAddToCart = useCallback((product) => {
-        setCart(prevCart => {
-            const productId = product._id || product.id;
-            if (prevCart.some(item => (item._id || item.id) === productId)) return prevCart;
-            const updatedCart = [...prevCart, { ...product, quantity: 1, addedAt: new Date().toISOString() }];
-            localStorage.setItem("pawsitivity_cart", JSON.stringify(updatedCart));
-            window.dispatchEvent(new Event("pawsitivity_cart_updated"));
-            return updatedCart;
-        });
+        addToCart(product, 1);
         setShowCartNotification(true);
         if (notificationTimeout.current) clearTimeout(notificationTimeout.current);
         notificationTimeout.current = setTimeout(() => setShowCartNotification(false), 3500);
         return () => clearTimeout(notificationTimeout.current);
-    }, []);
+    }, [addToCart]);
 
     // Memoize category change handler
     const handleCategoryChange = useCallback((category) => {
@@ -552,31 +520,13 @@ export default function BestsellersPage() {
 
     // Add quantity change handler for cart items
     const handleQuantityChange = useCallback((productId, newQuantity) => {
-        setCart(prevCart => {
-            const updatedCart = prevCart.map(item => {
-                const itemId = item._id || item.id;
-                return itemId === productId
-                    ? { ...item, quantity: Math.max(1, newQuantity) }
-                    : item;
-            });
-            localStorage.setItem("pawsitivity_cart", JSON.stringify(updatedCart));
-            window.dispatchEvent(new Event("pawsitivity_cart_updated"));
-            return updatedCart;
-        });
-    }, []);
+        updateQuantity(productId, newQuantity);
+    }, [updateQuantity]);
 
     // Remove product from cart by id
     const handleRemoveFromCart = useCallback((productId) => {
-        setCart(prevCart => {
-            const updatedCart = prevCart.filter(item => {
-                const itemId = item._id || item.id;
-                return itemId !== productId;
-            });
-            localStorage.setItem("pawsitivity_cart", JSON.stringify(updatedCart));
-            window.dispatchEvent(new Event("pawsitivity_cart_updated"));
-            return updatedCart;
-        });
-    }, []);
+        removeFromCart(productId);
+    }, [removeFromCart]);
 
     // Handler for "View Cart" button in notification
     const handleViewCart = useCallback(() => {
@@ -588,10 +538,8 @@ export default function BestsellersPage() {
     const handleRetry = useCallback(async () => {
         setLoading(true);
         setError(null);
-        
         try {
             const response = await getAllProducts();
-            
             if (response.success) {
                 setProducts(response.products || response.data || []);
             } else {

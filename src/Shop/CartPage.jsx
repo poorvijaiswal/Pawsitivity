@@ -1,86 +1,34 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import { FaTrashAlt, FaPlus, FaMinus, FaShoppingCart, FaArrowLeft } from "react-icons/fa";
-
-function getCartFromStorage() {
-  try {
-    const cart = localStorage.getItem("pawsitivity_cart");
-    return cart ? JSON.parse(cart) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveCartToStorage(cart) {
-  localStorage.setItem("pawsitivity_cart", JSON.stringify(cart));
-  window.dispatchEvent(new Event("pawsitivity_cart_updated"));
-}
+import { useCart } from '../Context/CartContext'; // Import the context hook
 
 export default function CartPage() {
-  const [cart, setCart] = useState([]);
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  // Use the context to get cart data and functions
+  const { cart, loading, removeFromCart, updateQuantity, getCartTotal } = useCart();
+  const total = getCartTotal();
 
-  // Always load cart from localStorage on mount and listen for updates
-  useEffect(() => {
-    const syncCart = () => setCart(getCartFromStorage());
-    window.addEventListener("pawsitivity_cart_updated", syncCart);
-    syncCart();
-    return () => window.removeEventListener("pawsitivity_cart_updated", syncCart);
-  }, []);
-
-  // Remove only one instance of a product (by id and addedAt)
-  const handleRemove = (id, addedAt) => {
-    setCart((prev) => {
-      const idx = prev.findIndex((item) => item.id === id && item.addedAt === addedAt);
-      if (idx !== -1) {
-        const newCart = [...prev];
-        newCart.splice(idx, 1);
-        saveCartToStorage(newCart);
-        return newCart;
-      }
-      return prev;
-    });
-  };
-
-  // Change quantity for a specific cart item (by id and addedAt)
-  const handleQuantityChange = (id, addedAt, delta, stockCount) => {
-    setCart((prev) => {
-      const updated = prev.map((item) =>
-        item.id === id && item.addedAt === addedAt
-          ? {
-              ...item,
-              quantity: Math.max(1, Math.min(item.quantity + delta, stockCount || 99)),
-            }
-          : item
-      );
-      saveCartToStorage(updated);
-      window.dispatchEvent(new Event("pawsitivity_cart_updated"));
-      return updated;
-    });
-  };
-
-  // Calculate total correctly
-  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-
-  // Proceed to address with forced navigation and reload for reliability
   const handleProceed = () => {
-    setLoading(true);
-    // Save cart before navigation
-    saveCartToStorage(cart);
-    navigate("/address", { replace: true });
-    // Force reload to ensure route change is reflected (for static hosting or SPA quirks)
-    setTimeout(() => {
-      window.location.href = "/address";
-    }, 50);
+    // No need to save to storage, the context handles that
+    navigate("/address");
   };
 
-  // Fix: When cart is empty and user clicks "Go to Shop", force navigation and reload
-  const handleGoToShop = (e) => {
-    e.preventDefault();
-    navigate("/shop", { replace: true });
-    window.location.href = "/shop";
+  const handleGoToShop = () => {
+    navigate("/shop");
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
+        <svg className="animate-spin h-8 w-8 text-orange-500" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+        </svg>
+        <p className="mt-4 text-gray-500">Loading your cart...</p>
+      </div>
+    );
+  }
 
   if (cart.length === 0) {
     return (
@@ -88,13 +36,12 @@ export default function CartPage() {
         <FaShoppingCart className="text-6xl text-gray-300 mb-4" />
         <h2 className="text-2xl font-bold text-gray-700 mb-2">Your cart is empty</h2>
         <p className="text-gray-500 mb-6">Looks like you haven't added anything yet.</p>
-        <a
-          href="/shop"
+        <button
           onClick={handleGoToShop}
           className="px-6 py-3 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-700 transition"
         >
           Go to Shop
-        </a>
+        </button>
       </div>
     );
   }
@@ -112,9 +59,9 @@ export default function CartPage() {
         </button>
         <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-gray-900">Your Cart</h1>
         <div className="divide-y divide-gray-200">
-          {cart.map((item, idx) => (
+          {cart.map((item) => (
             <div
-              key={item.id + (item.addedAt || idx)}
+              key={item.id}
               className="flex flex-col sm:flex-row items-center gap-4 py-6"
             >
               <img
@@ -137,9 +84,7 @@ export default function CartPage() {
                 </div>
                 <div className="flex items-center mt-3 gap-2">
                   <button
-                    onClick={() =>
-                      handleQuantityChange(item.id, item.addedAt, -1, item.stockCount)
-                    }
+                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
                     className="p-2 rounded-full bg-gray-100 hover:bg-gray-200"
                     aria-label="Decrease quantity"
                   >
@@ -149,16 +94,14 @@ export default function CartPage() {
                     {item.quantity}
                   </span>
                   <button
-                    onClick={() =>
-                      handleQuantityChange(item.id, item.addedAt, 1, item.stockCount)
-                    }
+                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
                     className="p-2 rounded-full bg-gray-100 hover:bg-gray-200"
                     aria-label="Increase quantity"
                   >
                     <FaPlus />
                   </button>
                   <button
-                    onClick={() => handleRemove(item.id, item.addedAt)}
+                    onClick={() => removeFromCart(item.id)}
                     className="ml-4 p-2 rounded-full bg-red-50 hover:bg-red-100 text-red-600"
                     aria-label="Remove item"
                   >
@@ -194,4 +137,4 @@ export default function CartPage() {
       </div>
     </div>
   );
-}
+};

@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import './App.css'
 import Navbar from './Components/Navbar'
@@ -22,6 +21,7 @@ import ProductPage from './Shop/Product/ProductPage'
 import CartPage from './Shop/CartPage';
 import AddressPage from './Shop/AddressPage';
 import CheckoutPage from './Shop/CheckoutPage';
+import { CartProvider } from './Context/CartContext'
 
 // Protected route component
 const ProtectedRoute = ({ children, isLoggedIn, userType, requiredUserType, loading }) => {
@@ -131,15 +131,10 @@ function AppContent() {
             </>
           }
         />
-        <Route 
-          path="/cart" 
-          element={
-            <>
-              <CartPage />
-              <Footer />
-            </>
-          }
-        />
+        
+        {/* The corrected location for CartProvider */}
+        <Route path="/cart" element={<CartPage />} />
+        
         <Route 
           path="/address" 
           element={
@@ -181,7 +176,9 @@ function MainApp() {
   return (
     <Router>
       <AuthProvider>
-        <AppContent />
+        <CartProvider> {/* Moved CartProvider here */}
+          <AppContent />
+        </CartProvider>
       </AuthProvider>
     </Router>
   );

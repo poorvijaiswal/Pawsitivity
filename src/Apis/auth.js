@@ -213,9 +213,9 @@ export const getAddresses = async (userId) => {
     };
   } 
 };
-export const updateAddress = async (addressId) => {
+export const updateAddress = async (addressId, addressData) => {
   try {
-    const response = await ADDRESS_API_URL.put(`/${addressId}`);
+    const response = await ADDRESS_API_URL.put(`/${addressId}`, addressData);
     return {
       success: true,
       message: 'Address updated successfully',

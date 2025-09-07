@@ -52,32 +52,33 @@ export default function AddressPage() {
     fetchAddresses();
   }, []);
 
-const validate = () => {
-  const errs = {};
-  if (!(address.fullName || "").trim())
-    errs.fullName = "Full name is required.";
-  if (!(address.email || "").trim() || !/\S+@\S+\.\S+/.test(address.email || ""))
-    errs.email = "Valid email is required.";
-  if (!/^[6-9]\d{9}$/.test(address.phoneNumber || ""))
-    errs.phoneNumber = "Valid 10-digit phone is required.";
-  if (!(address.street || "").trim())
-    errs.street = "Street address is required.";
-  if (!(address.city || "").trim())
-    errs.city = "City is required.";
-  if (!(address.state || "").trim())
-    errs.state = "State is required.";
-  if (!(address.pinCode || "").trim() || !/^\d{5,6}$/.test(address.pinCode || ""))
-    errs.pinCode = "Valid pin code is required.";
-  if (!(address.country || "").trim())
-    errs.country = "Country is required.";
+  const validate = () => {
+    const errs = {};
+    if (!(address.fullName || "").trim())
+      errs.fullName = "Full name is required.";
+    if (!(address.email || "").trim() || !/\S+@\S+\.\S+/.test(address.email || ""))
+      errs.email = "Valid email is required.";
+    if (!/^[6-9]\d{9}$/.test(address.phoneNumber || ""))
+      errs.phoneNumber = "Valid 10-digit phone is required.";
+    if (!(address.street || "").trim())
+      errs.street = "Street address is required.";
+    if (!(address.city || "").trim())
+      errs.city = "City is required.";
+    if (!(address.state || "").trim())
+      errs.state = "State is required.";
+    if (!(address.pinCode || "").trim() || !/^\d{5,6}$/.test(address.pinCode || ""))
+      errs.pinCode = "Valid pin code is required.";
+    if (!(address.country || "").trim())
+      errs.country = "Country is required.";
 
-  if (!address.billingSameAsShipping) {
-    const b = address.billingAddress || {};
-    if (!(b.street || "").trim())
-      errs.billingAddress = "Billing address required";
-  }
-  return errs;
-};
+    if (!address.billingSameAsShipping) {
+      const b = address.billingAddress || {};
+      if (!(b.street || "").trim())
+        errs.billingAddress = "Billing address required";
+    }
+    return errs;
+  };
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setAddress((prev) => ({
@@ -86,17 +87,11 @@ const validate = () => {
     }));
   };
 
-  const handleAddAddress = async (e) => {
-    e.preventDefault();
-    const errs = validate();
-    if (Object.keys(errs).length) {
-      setErrors(errs);
-      return;
-    }
+  const handleAddAddress = async () => {
     const userInfo = JSON.parse(localStorage.getItem("user"));
     if (!userInfo?._id) {
       alert("User not logged in");
-      return;
+      return { success: false, message: "User not logged in" };
     }
     setAddressLoading(true);
     const addressData = {
@@ -116,85 +111,83 @@ const validate = () => {
       billingAddress: address.billingAddress,
     };
     const result = await addAddress(addressData);
+    setAddressLoading(false);
     if (result.success) {
       fetchAddresses();
-      setAddress({
-        fullName: "",
-        email: "",
-        phoneNumber: "",
-        street: "",
-        landmark: "",
-        city: "",
-        state: "",
-        pinCode: "",
-        country: "",
-        company: "",
-        deliveryInstructions: "",
-        billingSameAsShipping: true,
-        billingAddress: {},
-      });
       setErrors({});
-      alert("✅ Address added successfully!");
+      alert("Address added successfully!");
     } else {
       setAddressError(result.message);
     }
-    setAddressLoading(false);
+    return result;
   };
 
-  // Delete address
   const handleDeleteAddress = async (addressId) => {
     if (!window.confirm("Are you sure you want to delete this address?"))
       return;
     setAddressLoading(true);
     const result = await deleteAddress(addressId);
     if (result.success) {
-      fetchAddresses();
+      // Remove only the deleted address from state
+      setSavedAddresses((prev) => prev.filter((addr) => addr._id !== addressId));
+      setAddressError(null);
     } else {
       setAddressError(result.message);
     }
     setAddressLoading(false);
   };
 
-  // Edit address
   const handleEditAddress = (addr) => {
     setEditId(addr._id);
     setEditAddress({ ...addr });
   };
 
-  // Update address
   const handleUpdateAddress = async (e) => {
     e.preventDefault();
     setAddressLoading(true);
+    // Validate editAddress before update
+    const errs = validate();
+    if (Object.keys(errs).length) {
+      setErrors(errs);
+      setAddressLoading(false);
+      return;
+    }
+    // updateAddress expects (addressId, addressData)
     const result = await updateAddress(editId, editAddress);
     if (result.success) {
       fetchAddresses();
       setEditId(null);
       setEditAddress(null);
+      setErrors({});
     } else {
       setAddressError(result.message);
     }
     setAddressLoading(false);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length) {
       setErrors(errs);
       return;
     }
-    const finalAddress = { shipping: address };
-    if (!address.billingSameAsShipping) {
-      finalAddress.billing = address.billingAddress;
+
+    const addResult = await handleAddAddress();
+    if (addResult.success) {
+      const finalAddress = { shipping: address };
+      if (!address.billingSameAsShipping) {
+        finalAddress.billing = address.billingAddress;
+      }
+      localStorage.setItem("address", JSON.stringify(finalAddress));
+      navigate("/checkout");
     }
-    localStorage.setItem("checkout_address", JSON.stringify(finalAddress));
-    navigate("/checkout");
   };
 
   return (
     <div className="min-h-screen bg-[#f9fafb] flex items-center justify-center px-2 py-6">
       <form
-        onSubmit={handleAddAddress}
+        onSubmit={handleSubmit}
         className="w-full max-w-3xl bg-white rounded-2xl shadow-2xl border border-orange-200 p-0 flex flex-col"
         style={{
           maxHeight: "calc(100vh - 32px)",
@@ -345,9 +338,9 @@ const validate = () => {
                 Billing Address
               </h3>
               <InputField
-                name="billing_address1"
+                name="billingStreet"
                 label="Street Address"
-                value={address.billingAddress.address1 || ""}
+                value={address.billingAddress?.street || ""}
                 onChange={(e) => {
                   setAddress({
                     ...address,
@@ -531,7 +524,6 @@ const validate = () => {
         <div className="px-8 pb-8 sm:px-12 bg-white rounded-b-2xl border-t border-orange-100">
           <button
             type="submit"
-            
             className="w-full py-3 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-700 shadow-md transition text-lg"
           >
             Continue to Checkout

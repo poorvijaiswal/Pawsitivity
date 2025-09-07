@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useCart } from "../../Context/CartContext";
 import { useParams, useNavigate } from "react-router-dom";
-// import { motion } from "framer-motion";
 import { getProductById } from "../../Apis/product_api";
 import {
   FaShoppingCart,
@@ -23,23 +23,14 @@ const ProductPage = () => {
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState("description");
   const [isWishlisted, setIsWishlisted] = useState(false);
-  const [cart, setCart] = useState(() => {
-    try {
-      const stored = localStorage.getItem("pawsitivity_cart");
-      return stored ? JSON.parse(stored) : [];
-    } catch {
-      return [];
-    }
-  });
+  const { cart, addToCart } = useCart();
 
   useEffect(() => {
     const loadProduct = async () => {
       setLoading(true);
       setError(null);
-
       try {
         const response = await getProductById(id);
-
         if (response.success) {
           setProduct(response.product);
           setSelectedImage(0);
@@ -53,82 +44,33 @@ const ProductPage = () => {
         setLoading(false);
       }
     };
-
     if (id) {
       loadProduct();
     }
-
-    // Load cart from localStorage
-    const syncCart = () => {
-      try {
-        const stored = localStorage.getItem("pawsitivity_cart");
-        setCart(stored ? JSON.parse(stored) : []);
-      } catch {
-        setCart([]);
-      }
-    };
-    window.addEventListener("pawsitivity_cart_updated", syncCart);
-    syncCart();
-    return () =>
-      window.removeEventListener("pawsitivity_cart_updated", syncCart);
   }, [id]);
 
-  // Sync cart state with localStorage whenever cart changes elsewhere
-  useEffect(() => {
-    const syncCart = () => {
-      try {
-        const stored = localStorage.getItem("pawsitivity_cart");
-        setCart(stored ? JSON.parse(stored) : []);
-      } catch {
-        setCart([]);
-      }
-    };
-    window.addEventListener("storage", syncCart);
-    return () => window.removeEventListener("storage", syncCart);
-  }, []);
+  // ...existing code...
 
   // Get quantity from cart for this product
-  const cartProduct = cart.find((item) => item._id === product?._id);
   useEffect(() => {
-    // If product is in cart, sync quantity state to cart quantity
+    if (!product) return;
+    const cartProduct = cart.find((item) => item.id === product._id || item.id === product.id);
     if (cartProduct) {
       setQuantity(cartProduct.quantity);
     } else {
       setQuantity(1);
     }
-    // eslint-disable-next-line
-  }, [cartProduct?.quantity, product?._id]);
+  }, [cart, product]);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!product) return;
-
-    const productId = product._id;
-    const existingIndex = cart.findIndex((item) => item._id === productId);
-    let updatedCart;
-
-    if (existingIndex !== -1) {
-      updatedCart = cart.map((item, idx) =>
-        idx === existingIndex ? { ...item, quantity: quantity } : item
-      );
-    } else {
-      updatedCart = [
-        ...cart,
-        {
-          ...product,
-          quantity: quantity,
-          addedAt: new Date().toISOString(),
-        },
-      ];
-    }
-
-    setCart(updatedCart);
-    localStorage.setItem("pawsitivity_cart", JSON.stringify(updatedCart));
-    window.dispatchEvent(new Event("pawsitivity_cart_updated"));
-    alert(`${product.product} added to cart!`);
+    await addToCart(product, quantity);
+    alert(`${product.product || product.name || "Product"} added to cart!`);
+    console.log(addToCart);
   };
 
-  const handleBuyNow = () => {
-    handleAddToCart();
+  const handleBuyNow = async () => {
+    await handleAddToCart();
     navigate("/address");
   };
 
@@ -260,9 +202,8 @@ const ProductPage = () => {
             </span>
           )}
         </button>
-
+          {/* Product detail page  */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-10">
-          {/* Product Images */}
           <div className="space-y-4">
             <div className="aspect-square bg-white rounded-lg overflow-hidden shadow-lg w-full max-w-md mx-auto">
               <img
@@ -304,7 +245,6 @@ const ProductPage = () => {
             )}
           </div>
 
-          {/* Product Info */}
           <div className="space-y-6 flex flex-col">
             <div>
               <h1
@@ -328,7 +268,6 @@ const ProductPage = () => {
               )}
             </div>
 
-            {/* Rating */}
             <div className="flex items-center space-x-2">
               <div className="flex items-center">
                 {[...Array(5)].map((_, i) => (
@@ -347,7 +286,6 @@ const ProductPage = () => {
               </span>
             </div>
 
-            {/* Price */}
             <div className="flex items-center space-x-3">
               <span className="text-2xl sm:text-3xl font-bold text-orange-600">
                 ₹{productPrice}
@@ -364,7 +302,6 @@ const ProductPage = () => {
               )}
             </div>
 
-            {/* Stock Status */}
             <div className="flex items-center space-x-2">
               {productStock > 0 ? (
                 <>
@@ -380,7 +317,6 @@ const ProductPage = () => {
               )}
             </div>
 
-            {/* Product Details Tabs */}
             <div className="bg-white rounded-lg shadow-md overflow-hidden mt-4">
               <div className="border-b border-gray-200">
                 <nav className="flex flex-wrap space-x-4 sm:space-x-8 px-2 sm:px-6">
@@ -432,7 +368,7 @@ const ProductPage = () => {
                 )}
                 {activeTab === "specifications" && (
                   <div className="space-y-4">
-                    {/* Display specifications as array */}
+          
                     {product.specifications && product.specifications.length > 0 ? (
                       <div className="space-y-3">
                         <h4 className="font-semibold text-gray-800 mb-3">Product Specifications:</h4>
@@ -451,8 +387,8 @@ const ProductPage = () => {
                       </div>
                     )}
 
-                    {/* Display tags if available */}
-                    {/* {product.tags && product.tags.length > 0 && (
+          
+                    {product.tags && product.tags.length > 0 && (
                       <div className="mt-6 pt-4 border-t border-gray-200">
                         <h4 className="font-semibold text-gray-700 mb-2">Tags:</h4>
                         <div className="flex flex-wrap gap-2">
@@ -466,9 +402,9 @@ const ProductPage = () => {
                           ))}
                         </div>
                       </div>
-                    )} */}
+                    )}
 
-                    {/* Display benefits if available */}
+          
                     {product.benefits && product.benefits.length > 0 && (
                       <div className="mt-6 pt-4 border-t border-gray-200">
                         <h4 className="font-semibold text-gray-700 mb-3">Benefits:</h4>
@@ -501,7 +437,7 @@ const ProductPage = () => {
               </div>
             </div>
 
-            {/* Trust Badges */}
+   
             <div className="flex flex-wrap items-center space-x-6 pt-6 border-t">
               <div className="flex items-center space-x-2">
                 <FaTruck className="text-green-500" />
@@ -513,7 +449,7 @@ const ProductPage = () => {
               </div>
             </div>
 
-            {/* Actions: Quantity, Add to Cart, Buy Now, Heart */}
+      
             <div className="flex flex-col gap-3 mt-6">
               <div className="flex items-center space-x-4">
                 <span className="font-medium text-sm sm:text-base">
@@ -540,7 +476,7 @@ const ProductPage = () => {
                     +
                   </button>
                 </div>
-                {/* Heart button */}
+  
                 <button
                   onClick={() => setIsWishlisted(!isWishlisted)}
                   className={`ml-auto px-2 py-2 rounded-full border transition-colors ${
