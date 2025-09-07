@@ -10,7 +10,6 @@ export default function CartPage() {
   const total = getCartTotal();
 
   const handleProceed = () => {
-    // No need to save to storage, the context handles that
     navigate("/address");
   };
 

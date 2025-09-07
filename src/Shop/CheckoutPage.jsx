@@ -1,20 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAddresses } from "../Apis/auth";
-
-function getCartFromStorage() {
-  try {
-    const cart = localStorage.getItem("pawsitivity_cart");
-    return cart ? JSON.parse(cart) : [];
-  } catch {
-    return [];
-  }
-}
-
-
+import { useCart } from "../Context/CartContext";
 
 export default function CheckoutPage() {
-  const [cart, setCart] = useState(getCartFromStorage());
+  const { cart } = useCart();
   const [address, setAddress] = useState(null);
   const [processing, setProcessing] = useState(false);
   const [addressLoading, setAddressLoading] = useState(true);
@@ -26,7 +16,6 @@ export default function CheckoutPage() {
     if (userId) {
       getAddresses(userId).then((result) => {
         if (result.success && result.data.addresses && result.data.addresses.length > 0) {
-          // Use the most recent address
           setAddress(result.data.addresses[result.data.addresses.length - 1]);
           setAddressError(null);
         } else {
@@ -44,14 +33,9 @@ export default function CheckoutPage() {
 
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-  const handlePayment = () => {
-    setProcessing(true);
-    setTimeout(() => {
-      localStorage.removeItem("pawsitivity_cart");
-      setProcessing(false);
-      navigate("/shop");
-      alert("Payment successful! Thank you for your order.");
-    }, 2000);
+  const handleProceedOrder = () => {
+    // Pass address and cart to order page (or order API)
+    navigate("/order", { state: { address, cart, total } });
   };
 
   if (!cart.length) {
@@ -125,11 +109,10 @@ export default function CheckoutPage() {
         </div>
         <div className="flex flex-col sm:flex-row justify-end items-center mt-8 gap-4">
           <button
-            onClick={handlePayment}
-            disabled={processing}
-            className="w-full sm:w-auto px-8 py-3 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-700 transition disabled:opacity-60"
+            onClick={handleProceedOrder}
+            className="w-full sm:w-auto px-8 py-3 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-700 transition"
           >
-            {processing ? "Processing Payment..." : "Pay Now"}
+            Proceed to Order
           </button>
         </div>
       </div>
