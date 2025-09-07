@@ -22,6 +22,7 @@ import CartPage from './Shop/CartPage';
 import AddressPage from './Shop/AddressPage';
 import CheckoutPage from './Shop/CheckoutPage';
 import { CartProvider } from './Context/CartContext'
+import Order from './Shop/OrderPage'
 
 // Protected route component
 const ProtectedRoute = ({ children, isLoggedIn, userType, requiredUserType, loading }) => {
@@ -149,6 +150,15 @@ function AppContent() {
           element={
             <>
               <CheckoutPage />
+              <Footer />
+            </>
+          }
+        />
+         <Route 
+          path="/Order" 
+          element={
+            <>
+              <Order />
               <Footer />
             </>
           }

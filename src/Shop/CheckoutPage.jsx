@@ -2,6 +2,17 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAddresses } from "../Apis/auth";
 import { useCart } from "../Context/CartContext";
+import { CreditCard, Banknote, QrCode, Smartphone, ChevronDown, CheckCircle2, Circle } from 'lucide-react';
+
+const CardTypeIcons = {
+  VISA: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/1200px-Visa_Inc._logo.svg.png",
+  MASTERCARD: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/MasterCard_Logo.svg/1200px-MasterCard_Logo.svg.png",
+  AMEX: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/American_Express_logo.svg/1200px-American_Express_logo.svg.png",
+  DISCOVER: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Discover_Card_logo.svg/1200px-Discover_Card_logo.svg.png",
+  RUPAY: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/RuPay-Logo.png/1200px-RuPay-Logo.png"
+};
+
+
 
 export default function CheckoutPage() {
   const { cart } = useCart();
@@ -10,6 +21,23 @@ export default function CheckoutPage() {
   const [addressLoading, setAddressLoading] = useState(true);
   const [addressError, setAddressError] = useState(null);
   const navigate = useNavigate();
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('saved_card');
+  const [useSavedCard, setUseSavedCard] = useState(true);
+
+  const handlePaymentMethodChange = (method) => {
+    setSelectedPaymentMethod(method);
+    setUseSavedCard(method === 'saved_card');
+  };
+
+  const paymentMethods = [
+    { id: 'saved_card', label: 'VISA ending in 3681', icon: CardTypeIcons.VISA, nickname: 'Sweta Raj Patel' },
+    { id: 'new_card', label: 'Credit or debit card', icon: <CreditCard className="w-5 h-5" /> },
+    { id: 'net_banking', label: 'Net Banking', icon: <Banknote className="w-5 h-5" /> },
+    { id: 'upi_qr', label: 'Scan and Pay with UPI', icon: <QrCode className="w-5 h-5" /> },
+    { id: 'upi_app', label: 'Other UPI Apps', icon: <Smartphone className="w-5 h-5" /> },
+    { id: 'emi', label: 'EMI Unavailable', icon: null, disabled: true },
+    { id: 'cod', label: 'Cash on Delivery/Pay on Delivery', icon: null },
+  ];
 
   useEffect(() => {
     const userId = JSON.parse(localStorage.getItem("user"))?._id;
@@ -35,7 +63,7 @@ export default function CheckoutPage() {
 
   const handleProceedOrder = () => {
     // Pass address and cart to order page (or order API)
-    navigate("/order", { state: { address, cart, total } });
+    navigate("/Order", { state: { address, cart, total } });
   };
 
   if (!cart.length) {
@@ -78,6 +106,85 @@ export default function CheckoutPage() {
             ) : (
               <div className="text-red-600">{addressError || "No address found."}</div>
             )}
+                     <div className="flex-1 bg-white rounded-xl shadow-lg p-6 space-y-6">
+          <div className="flex items-center space-x-2 pb-4 border-b border-gray-200">
+            <h2 className="text-xl font-semibold">Place Your Order</h2>
+          </div>
+
+          <div className="flex flex-col space-y-4">
+            <h3 className="text-sm text-gray-500 uppercase font-semibold">Credit & Debit Cards</h3>
+            
+            {/* Saved Card Section */}
+            <div
+              className={`flex items-center justify-between p-4 rounded-lg cursor-pointer transition-all duration-200 ${selectedPaymentMethod === 'saved_card' ? 'bg-blue-50 border-blue-500' : 'bg-gray-50 border-gray-200'} border-2`}
+              onClick={() => handlePaymentMethodChange('saved_card')}
+            >
+              <div className="flex items-center space-x-4">
+                {selectedPaymentMethod === 'saved_card' ? <CheckCircle2 className="w-6 h-6 text-blue-600" /> : <Circle className="w-6 h-6 text-gray-400" />}
+                {CardTypeIcons.VISA && (
+                  <img src={CardTypeIcons.VISA} alt="VISA" className="h-6 w-auto" />
+                )}
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <span className="font-medium text-gray-700">VISA ending in 3681</span>
+                    <span className="text-sm font-light text-gray-500">VISA</span>
+                  </div>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-gray-600">Nickname</p>
+                <p className="font-medium text-gray-800">Sweta Raj Patel</p>
+              </div>
+            </div>
+
+            {/* New Card Section */}
+            <h3 className="text-sm text-gray-500 uppercase font-semibold pt-4">Another payment method</h3>
+            <div
+              className={`flex items-center p-4 rounded-lg cursor-pointer transition-all duration-200 ${selectedPaymentMethod === 'new_card' ? 'bg-blue-50 border-blue-500' : 'bg-gray-50 border-gray-200'} border-2`}
+              onClick={() => handlePaymentMethodChange('new_card')}
+            >
+              <div className="flex items-center space-x-4">
+                {selectedPaymentMethod === 'new_card' ? <CheckCircle2 className="w-6 h-6 text-blue-600" /> : <Circle className="w-6 h-6 text-gray-400" />}
+                <CreditCard className="w-6 h-6 text-gray-600" />
+                <span className="font-medium text-gray-700">Credit or debit card</span>
+              </div>
+            </div>
+            {selectedPaymentMethod === 'new_card' && (
+              <div className="p-4 bg-white rounded-b-xl border border-t-0 border-gray-200">
+                <div className="flex space-x-2 mb-4">
+                  <img src={CardTypeIcons.VISA} alt="VISA" className="h-5" />
+                  <img src={CardTypeIcons.MASTERCARD} alt="MasterCard" className="h-5" />
+                  <img src={CardTypeIcons.AMEX} alt="Amex" className="h-5" />
+                  <img src={CardTypeIcons.RUPAY} alt="RuPay" className="h-5" />
+                  <img src={CardTypeIcons.DISCOVER} alt="Discover" className="h-5" />
+                </div>
+                {/* Form to be added here */}
+              </div>
+            )}
+            
+            {/* Other Payment Methods */}
+            {paymentMethods.filter(m => m.id !== 'saved_card' && m.id !== 'new_card').map(method => (
+              <div
+                key={method.id}
+                className={`flex items-center p-4 rounded-lg cursor-pointer transition-all duration-200 ${selectedPaymentMethod === method.id ? 'bg-blue-50 border-blue-500' : 'bg-gray-50 border-gray-200'} border-2 ${method.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                onClick={() => !method.disabled && handlePaymentMethodChange(method.id)}
+              >
+                <div className="flex items-center space-x-4">
+                  {selectedPaymentMethod === method.id ? <CheckCircle2 className="w-6 h-6 text-blue-600" /> : <Circle className="w-6 h-6 text-gray-400" />}
+                  {method.icon && (
+                    <div className="text-gray-600">{method.icon}</div>
+                  )}
+                  <div className="flex items-center space-x-1">
+                    <span className={`font-medium ${method.disabled ? 'text-gray-400' : 'text-gray-700'}`}>{method.label}</span>
+                    {method.id === 'net_banking' && <ChevronDown className="w-4 h-4 text-gray-500" />}
+                    {method.id === 'emi' && <span className="text-blue-500 text-sm font-medium">Why?</span>}
+                    {method.id === 'cod' && <span className="text-sm text-gray-500">Cash, UPI and Cards accepted. <a href="#" className="text-blue-500">Know more.</a></span>}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
           </div>
           {/* Order Summary */}
           <div>
@@ -116,6 +223,7 @@ export default function CheckoutPage() {
           </button>
         </div>
       </div>
+   
     </div>
   );
 }
