@@ -8,21 +8,7 @@ import './App.css'
 import Navbar from './Components/Navbar'
 import Footer from './Components/Footer/Footer'
 
-// Home Page Components
-import HeroCarousel from './Components/HeroCarousel'
-import AnimatedHeader from './Components/AnimatedHeader'
-import Collaborators from './Components/Collaborators'
-import TestimonialsCarousel from './Components/TestimonialsCarousel'
-import CustomerStoriesMasterFixed from './Components/CustomerStoriesMasterFixed'
-import Stats from './Components/Stats Page/Stats'
-import EmpoweringSection from './empowering section/EmpoweringSection'
-
-// Static Pages
-import ContactUs from './Components/contactus'
-import MediaPage from './Components/MediaPage'
-import AboutUs from './Components/Aboutus/Aboutus'
-
-// Auth Components
+// Auth Components (keep eager loading for quick auth)
 import Login from './Components/Auth/Login'
 import Signup from './Components/Auth/Signup'
 import AdminLogin from './Components/Auth/AdminLogin'
@@ -31,7 +17,21 @@ import { AuthProvider, useAuth } from './Components/Auth/AuthContext'
 // Context Providers
 import { CartProvider } from './Context/CartContext'
 
-// Lazy Loaded Components (for better performance)
+// Lazy Loaded Home Page Components (for faster initial load)
+const HeroCarousel = lazy(() => import('./Components/HeroCarousel'))
+const AnimatedHeader = lazy(() => import('./Components/AnimatedHeader'))
+const Collaborators = lazy(() => import('./Components/Collaborators'))
+const TestimonialsCarousel = lazy(() => import('./Components/TestimonialsCarousel'))
+const CustomerStoriesMasterFixed = lazy(() => import('./Components/CustomerStoriesMasterFixed'))
+const Stats = lazy(() => import('./Components/Stats Page/Stats'))
+const EmpoweringSection = lazy(() => import('./empowering section/EmpoweringSection'))
+
+// Lazy Loaded Static Pages
+const ContactUs = lazy(() => import('./Components/contactus'))
+const MediaPage = lazy(() => import('./Components/MediaPage'))
+const AboutUs = lazy(() => import('./Components/Aboutus/Aboutus'))
+
+// Lazy Loaded Shop Components
 const AdminDashboard = lazy(() => import('./Components/Admin/AdminDashboard'))
 const BestsellersPage = lazy(() => import('./Shop/BestsellersPage'))
 const ProductPage = lazy(() => import('./Shop/Product/ProductPage'))
@@ -111,18 +111,41 @@ const ProtectedRoute = ({ children, isLoggedIn, userType, requiredUserType, load
   return children;
 };
 
-// Home page component
+// Home page component with progressive loading
 const HomePage = () => {
   return (
-    <>
-      <HeroCarousel />
-      <AnimatedHeader />
-      <Stats/>
-      <Collaborators />
-      <CustomerStoriesMasterFixed />
-      <TestimonialsCarousel />
-      <EmpoweringSection />
-    </>
+    <div className="home-page">
+      {/* Priority content loads first */}
+      <Suspense fallback={<div className="h-96 bg-gray-100 animate-pulse"></div>}>
+        <HeroCarousel />
+      </Suspense>
+      
+      <Suspense fallback={<div className="h-32 bg-gray-100 animate-pulse m-4"></div>}>
+        <AnimatedHeader />
+      </Suspense>
+      
+      {/* Secondary content loads after */}
+      <Suspense fallback={<div className="h-48 bg-gray-100 animate-pulse m-4"></div>}>
+        <Stats />
+      </Suspense>
+      
+      <Suspense fallback={<div className="h-40 bg-gray-100 animate-pulse m-4"></div>}>
+        <Collaborators />
+      </Suspense>
+      
+      {/* Heavy content loads last */}
+      <Suspense fallback={<div className="h-64 bg-gray-100 animate-pulse m-4"></div>}>
+        <CustomerStoriesMasterFixed />
+      </Suspense>
+      
+      <Suspense fallback={<div className="h-56 bg-gray-100 animate-pulse m-4"></div>}>
+        <TestimonialsCarousel />
+      </Suspense>
+      
+      <Suspense fallback={<div className="h-48 bg-gray-100 animate-pulse m-4"></div>}>
+        <EmpoweringSection />
+      </Suspense>
+    </div>
   );
 };
 
