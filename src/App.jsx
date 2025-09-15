@@ -7,6 +7,7 @@ import './App.css'
 // Core Components
 import Navbar from './Components/Navbar'
 import Footer from './Components/Footer/Footer'
+import OfferSlider from './Components/OfferSlider'
 
 // Auth Components (keep eager loading for quick auth)
 import Login from './Components/Auth/Login'
@@ -115,6 +116,9 @@ const ProtectedRoute = ({ children, isLoggedIn, userType, requiredUserType, load
 const HomePage = () => {
   return (
     <div className="home-page">
+      {/* Offer Slider - Always visible at top */}
+      <OfferSlider />
+      
       {/* Priority content loads first */}
       <Suspense fallback={<div className="h-96 bg-gray-100 animate-pulse"></div>}>
         <HeroCarousel />
