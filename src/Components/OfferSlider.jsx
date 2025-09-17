@@ -31,6 +31,11 @@ const slides = [
 
 const OfferSlider = () => {
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [touchStart, setTouchStart] = useState(null);
+    const [touchEnd, setTouchEnd] = useState(null);
+
+    // Minimum swipe distance for touch gestures
+    const minSwipeDistance = 50;
 
     const nextSlide = useCallback(() => {
         setCurrentIndex((prevIndex) => (prevIndex === slides.length - 1 ? 0 : prevIndex + 1));
@@ -44,6 +49,27 @@ const OfferSlider = () => {
         setCurrentIndex(index);
     };
 
+    // Touch handlers for mobile swipe
+    const onTouchStart = (e) => {
+        setTouchEnd(null);
+        setTouchStart(e.targetTouches[0].clientX);
+    };
+
+    const onTouchMove = (e) => {
+        setTouchEnd(e.targetTouches[0].clientX);
+    };
+
+    const onTouchEnd = () => {
+        if (!touchStart || !touchEnd) return;
+        
+        const distance = touchStart - touchEnd;
+        const isLeftSwipe = distance > minSwipeDistance;
+        const isRightSwipe = distance < -minSwipeDistance;
+
+        if (isLeftSwipe) nextSlide();
+        if (isRightSwipe) prevSlide();
+    };
+
     useEffect(() => {
         const autoPlay = setInterval(nextSlide, 5000); // Har 5 seconds mein slide change hogi
         return () => clearInterval(autoPlay);
@@ -52,7 +78,12 @@ const OfferSlider = () => {
     return (
         // Slider ko full-width karne ke liye `max-w-7xl mx-auto` hata dein aur `w-full` use karein
         <div className="w-full font-sans">
-            <div className="relative overflow-hidden">
+            <div 
+                className="relative overflow-hidden"
+                onTouchStart={onTouchStart}
+                onTouchMove={onTouchMove}
+                onTouchEnd={onTouchEnd}
+            >
                 {/* --- Slides Container --- */}
                 <div 
                     className="flex transition-transform duration-700 ease-in-out"
