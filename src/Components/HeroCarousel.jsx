@@ -15,7 +15,7 @@ function getTopOffers() {
 const slides = [
   {
     id: 1,
-    image: '/src/assets/hero-dog.JPG',
+    image: '/src/assets/dogwithbelt.png',
     title: 'A collar of Care',
     subtitle: 'A promise of Safety',
     description: 'Our QR-enabled reflective collars protect stray animals and help reunite them with their caregivers.',
@@ -24,7 +24,7 @@ const slides = [
   },
   {
     id: 2,
-    image: '/src/assets/CustomerStories/Cow.JPG',
+    image: '/src/assets/womenlove.png',
     title: 'Stories of Hope',
     subtitle: 'Every Animal Matters',
     description: 'Join thousands of pet parents who trust our quality products to keep their beloved companions safe.',
@@ -33,7 +33,7 @@ const slides = [
   },
   {
     id: 3,
-    image: '/src/assets/strayanimal.png',
+    image: '/src/assets/dogaccident.png',
     title: 'Technology Meets',
     subtitle: 'Compassion',
     description: 'Advanced QR technology combined with durable materials creates the perfect safety solution for all animals.',
@@ -121,15 +121,15 @@ export default function HeroCarousel() {
     >
       {/* Top Offers Marquee */}
       {topOffers.length > 0 && (
-        <div className="absolute top-0 left-0 w-full z-30">
-          <div className="relative w-full overflow-hidden bg-gradient-to-r from-yellow-300 via-yellow-200 to-yellow-400 py-2 px-2 sm:px-6 flex items-center">
+        <div className="absolute top-0 left-0 z-30 w-full">
+          <div className="relative flex items-center w-full px-2 py-2 overflow-hidden bg-gradient-to-r from-yellow-300 via-yellow-200 to-yellow-400 sm:px-6">
             <motion.div
               key={offerIndex}
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ duration: 0.7, ease: "easeInOut" }}
-              className="whitespace-nowrap text-xs sm:text-sm md:text-base font-semibold text-yellow-900 flex items-center"
+              className="flex items-center text-xs font-semibold text-yellow-900 whitespace-nowrap sm:text-sm md:text-base"
               style={{ minWidth: '100%' }}
             >
               {topOffers[offerIndex]}
@@ -184,7 +184,7 @@ export default function HeroCarousel() {
             {[...Array(15)].map((_, i) => (
               <motion.div
                 key={i}
-                className="absolute w-2 h-2 bg-white/20 rounded-full"
+                className="absolute w-2 h-2 rounded-full bg-white/20"
                 animate={{
                   x: [Math.random() * window.innerWidth, Math.random() * window.innerWidth],
                   y: [Math.random() * window.innerHeight, Math.random() * window.innerHeight],
@@ -207,7 +207,7 @@ export default function HeroCarousel() {
 
       {/* Responsive Content */}
       <div className="relative z-10 flex items-center justify-center h-full pt-10 sm:pt-12">
-        <div className="text-center max-w-2xl mx-auto px-3 sm:px-8 w-full">
+        <div className="w-full max-w-2xl px-3 mx-auto text-center sm:px-8">
           <AnimatePresence mode="wait">
             <motion.div
               key={`content-${currentSlide}`}
@@ -221,7 +221,7 @@ export default function HeroCarousel() {
               }}
             >
               {/* Responsive Title */}
-              <motion.h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-2 sm:mb-4 leading-tight break-words"
+              <motion.h1 className="mb-2 text-2xl font-bold leading-tight text-white break-words xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl sm:mb-4"
                 style={{ wordBreak: 'break-word' }}
               >
                 {slides[currentSlide].title}
@@ -229,7 +229,7 @@ export default function HeroCarousel() {
               
               {/* Responsive Subtitle */}
               <motion.h2 
-                className="text-lg xs:text-xl sm:text-2xl md:text-3xl lg:text-4xl font-light text-white/90 mb-3 sm:mb-6"
+                className="mb-3 text-lg font-light xs:text-xl sm:text-2xl md:text-3xl lg:text-4xl text-white/90 sm:mb-6"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ 
@@ -243,7 +243,7 @@ export default function HeroCarousel() {
 
               {/* Responsive Description */}
               <motion.p 
-                className="text-sm xs:text-base sm:text-lg md:text-xl text-white/80 mb-4 sm:mb-8 max-w-xl mx-auto leading-relaxed"
+                className="max-w-xl mx-auto mb-4 text-sm leading-relaxed xs:text-base sm:text-lg md:text-xl text-white/80 sm:mb-8"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ 
@@ -257,7 +257,7 @@ export default function HeroCarousel() {
 
               {/* CTA Button */}
               <motion.button
-                className="group relative overflow-hidden bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-3 px-6 sm:py-4 sm:px-8 rounded-full text-base sm:text-lg transition-all duration-300 shadow-2xl hover:shadow-green-500/25 transform hover:scale-105"
+                className="relative px-6 py-3 overflow-hidden text-base font-semibold text-white transition-all duration-300 transform rounded-full shadow-2xl group bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 sm:py-4 sm:px-8 sm:text-lg hover:shadow-green-500/25 hover:scale-105"
                 initial={{ opacity: 0, y: 30, scale: 0.8 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ 
@@ -287,7 +287,7 @@ export default function HeroCarousel() {
       {/* Navigation Arrows */}
       <motion.button
         onClick={prevSlide}
-        className="absolute left-4 sm:left-8 top-1/2 transform -translate-y-1/2 bg-white/10 backdrop-blur-md hover:bg-white/20 text-white border border-white/20 hover:border-white/40 rounded-full w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center z-20 transition-all duration-300"
+        className="absolute z-20 flex items-center justify-center w-12 h-12 text-white transition-all duration-300 transform -translate-y-1/2 border rounded-full left-4 sm:left-8 top-1/2 bg-white/10 backdrop-blur-md hover:bg-white/20 border-white/20 hover:border-white/40 sm:w-16 sm:h-16"
         whileHover={{ scale: 1.1, x: -5 }}
         whileTap={{ scale: 0.9 }}
         initial={{ opacity: 0, x: -50 }}
@@ -301,7 +301,7 @@ export default function HeroCarousel() {
 
       <motion.button
         onClick={nextSlide}
-        className="absolute right-4 sm:right-8 top-1/2 transform -translate-y-1/2 bg-white/10 backdrop-blur-md hover:bg-white/20 text-white border border-white/20 hover:border-white/40 rounded-full w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center z-20 transition-all duration-300"
+        className="absolute z-20 flex items-center justify-center w-12 h-12 text-white transition-all duration-300 transform -translate-y-1/2 border rounded-full right-4 sm:right-8 top-1/2 bg-white/10 backdrop-blur-md hover:bg-white/20 border-white/20 hover:border-white/40 sm:w-16 sm:h-16"
         whileHover={{ scale: 1.1, x: 5 }}
         whileTap={{ scale: 0.9 }}
         initial={{ opacity: 0, x: 50 }}
@@ -314,7 +314,7 @@ export default function HeroCarousel() {
       </motion.button>
 
       {/* Slide Indicators */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-3 z-20">
+      <div className="absolute z-20 flex space-x-3 transform -translate-x-1/2 bottom-8 left-1/2">
         {slides.map((_, index) => (
           <motion.button
             key={index}
@@ -332,7 +332,7 @@ export default function HeroCarousel() {
           >
             {index === currentSlide && (
               <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full"
+                className="absolute inset-0 rounded-full bg-gradient-to-r from-green-400 to-emerald-500"
                 layoutId="activeSlide"
                 transition={{ type: "spring", stiffness: 400, damping: 30 }}
               />
@@ -343,12 +343,12 @@ export default function HeroCarousel() {
 
       {/* Scroll Indicator */}
       <motion.div
-        className="absolute bottom-8 right-8 flex flex-col items-center text-white/60 z-20"
+        className="absolute z-20 flex flex-col items-center bottom-8 right-8 text-white/60"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 2 }}
       >
-        <span className="text-sm mb-2 rotate-90 origin-center">Scroll</span>
+        <span className="mb-2 text-sm origin-center rotate-90">Scroll</span>
         <motion.div
           className="w-0.5 h-8 bg-white/60"
           animate={{ scaleY: [1, 0.5, 1] }}
