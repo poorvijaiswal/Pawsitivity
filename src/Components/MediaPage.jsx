@@ -1,10 +1,44 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { FaPlay, FaDownload, FaShare, FaEye, FaCalendar, FaMapMarkerAlt, FaNewspaper, FaCamera, FaVideo, FaTrophy } from 'react-icons/fa';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FaPlay, FaDownload, FaShare, FaEye, FaCalendar, FaMapMarkerAlt, FaNewspaper, FaCamera, FaVideo, FaTrophy, FaTimes } from 'react-icons/fa';
 
 const MediaPage = () => {
   const [activeTab, setActiveTab] = useState('photos');
   const [selectedImage, setSelectedImage] = useState(null);
+  const [imageLoading, setImageLoading] = useState({});
+  const [imageErrors, setImageErrors] = useState({});
+
+  // Handle image loading
+  const handleImageLoad = (id) => {
+    setImageLoading(prev => ({ ...prev, [id]: false }));
+  };
+
+  const handleImageError = (id) => {
+    setImageLoading(prev => ({ ...prev, [id]: false }));
+    setImageErrors(prev => ({ ...prev, [id]: true }));
+  };
+
+  // Handle keyboard events for modal
+  const handleKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      setSelectedImage(null);
+    }
+  };
+
+  // Add keyboard listener when modal is open
+  React.useEffect(() => {
+    if (selectedImage) {
+      document.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'unset';
+    };
+  }, [selectedImage]);
 
   // Media data
   const mediaData = {
@@ -188,7 +222,7 @@ const MediaPage = () => {
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
-                <Icon />
+                <Icon className="w-4 h-4" />
                 {label}
               </button>
             ))}
@@ -221,11 +255,27 @@ const MediaPage = () => {
                   className="overflow-hidden transition-shadow bg-white rounded-lg shadow-md cursor-pointer hover:shadow-lg"
                   onClick={() => setSelectedImage(photo)}
                 >
-                  <img
-                    src={photo.src}
-                    alt={photo.title}
-                    className="object-cover w-full h-64"
-                  />
+                  <div className="relative h-64 bg-gray-200">
+                    {imageErrors[photo.id] ? (
+                      <div className="flex flex-col items-center justify-center h-full text-gray-500">
+                        <FaCamera className="w-8 h-8 mb-2" />
+                        <span className="text-sm">Image not available</span>
+                      </div>
+                    ) : (
+                      <img
+                        src={photo.src}
+                        alt={photo.title}
+                        className="object-cover w-full h-full transition-opacity duration-300"
+                        onLoad={() => handleImageLoad(photo.id)}
+                        onError={() => handleImageError(photo.id)}
+                      />
+                    )}
+                    {imageLoading[photo.id] !== false && !imageErrors[photo.id] && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
+                        <div className="w-8 h-8 border-2 border-yellow-500 rounded-full border-t-transparent animate-spin"></div>
+                      </div>
+                    )}
+                  </div>
                   <div className="p-4">
                     <h3 className="mb-2 font-semibold text-gray-900">{photo.title}</h3>
                     <p className="mb-3 text-sm text-gray-600">{photo.description}</p>
@@ -383,49 +433,63 @@ const MediaPage = () => {
       </div>
 
       {/* Image Modal */}
-      {selectedImage && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-90"
-          onClick={() => setSelectedImage(null)}
-        >
+      <AnimatePresence>
+        {selectedImage && (
           <motion.div
-            initial={{ scale: 0.8 }}
-            animate={{ scale: 1 }}
-            exit={{ scale: 0.8 }}
-            className="max-w-4xl max-h-full overflow-auto bg-white rounded-lg"
-            onClick={(e) => e.stopPropagation()}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-90"
+            onClick={() => setSelectedImage(null)}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modal-title"
           >
-            <img
-              src={selectedImage.src}
-              alt={selectedImage.title}
-              className="w-full h-auto"
-            />
-            <div className="p-6">
-              <h3 className="mb-2 text-2xl font-bold text-gray-900">{selectedImage.title}</h3>
-              <p className="mb-4 text-gray-600">{selectedImage.description}</p>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4 text-sm text-gray-500">
-                  <span className="flex items-center gap-1">
-                    <FaCalendar />
-                    {selectedImage.date}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <FaMapMarkerAlt />
-                    {selectedImage.location}
-                  </span>
+            <motion.div
+              initial={{ scale: 0.8 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.8 }}
+              className="relative max-w-4xl max-h-full overflow-auto bg-white rounded-lg"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => setSelectedImage(null)}
+                className="absolute z-10 p-2 text-gray-600 transition-colors bg-white rounded-full top-4 right-4 hover:bg-gray-100 hover:text-gray-800"
+                aria-label="Close modal"
+              >
+                <FaTimes className="w-5 h-5" />
+              </button>
+              
+              <img
+                src={selectedImage.src}
+                alt={selectedImage.title}
+                className="w-full h-auto"
+              />
+              <div className="p-6">
+                <h3 id="modal-title" className="mb-2 text-2xl font-bold text-gray-900">{selectedImage.title}</h3>
+                <p className="mb-4 text-gray-600">{selectedImage.description}</p>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4 text-sm text-gray-500">
+                    <span className="flex items-center gap-1">
+                      <FaCalendar />
+                      {selectedImage.date}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <FaMapMarkerAlt />
+                      {selectedImage.location}
+                    </span>
+                  </div>
+                  <button className="flex items-center gap-2 px-4 py-2 text-white transition-colors bg-yellow-500 rounded-lg hover:bg-yellow-600">
+                    <FaDownload />
+                    Download
+                  </button>
                 </div>
-                <button className="flex items-center gap-2 px-4 py-2 text-white transition-colors bg-yellow-500 rounded-lg hover:bg-yellow-600">
-                  <FaDownload />
-                  Download
-                </button>
               </div>
-            </div>
+            </motion.div>
           </motion.div>
-        </motion.div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   );
 };
