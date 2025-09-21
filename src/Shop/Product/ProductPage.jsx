@@ -49,8 +49,6 @@ const ProductPage = () => {
     }
   }, [id]);
 
-  // ...existing code...
-
   // Get quantity from cart for this product
   useEffect(() => {
     if (!product) return;
@@ -142,10 +140,12 @@ const ProductPage = () => {
 
   // Map your backend data structure to display variables
   const productName = product.product || product.name || product.title;
-  const productImage = product.image?.[0]?.url || product.image?.[0] || "/api/placeholder/400/400";
-  const productImages = Array.isArray(product.image) 
-    ? product.image.map(img => img?.url || img) 
-    : (product.image ? [product.image?.url || product.image] : []);
+  // Use new product model: primaryImage (object), secondaryImages (array)
+  const primaryImage = product.primaryImage?.url || product.primaryImage || "/api/placeholder/400/400";
+  const secondaryImages = Array.isArray(product.secondaryImages)
+    ? product.secondaryImages.map(img => img?.url || img)
+    : [];
+  const productImages = [primaryImage, ...secondaryImages.filter(img => img && img !== primaryImage)];
   const productPrice = product.discountedPrice || product.price;
   const originalPrice = product.price;
   const productDescription = product.detail || product.description;
@@ -210,7 +210,7 @@ const ProductPage = () => {
                 src={
                   productImages.length > 0
                     ? productImages[selectedImage]
-                    : productImage
+                    : "/api/placeholder/400/400"
                 }
                 alt={productName}
                 className="w-full h-full object-cover"

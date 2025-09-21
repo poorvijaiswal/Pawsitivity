@@ -30,9 +30,10 @@ const ProductCard = React.memo(({ product, onAddToCart, cart, onQuantityChange, 
 
     // Map backend product data to display format
     const productName = product.product || product.name || product.title;
+    // Use new product model: primaryImage (object), secondaryImages (array)
+    const productImage = product.primaryImage?.url || product.primaryImage || '/api/placeholder/300/300';
     const productPrice = product.discountedPrice || product.price;
     const originalPrice = product.price;
-    const productImage = product.image?.[0]?.url || product.image?.[0] || '/api/placeholder/300/300';
     const productRating = product.rating || 0;
     const productReviewCount = product.noOfReviews || 0;
     const productCategory = product.category || 'Pet Products';
@@ -320,7 +321,7 @@ const ProductDetailsModal = ({ isOpen, onClose, productId, onAddToCart }) => {
                             {/* Product Image */}
                             <div className="aspect-square bg-white rounded-lg overflow-hidden shadow-lg max-w-md mx-auto">
                                 <img
-                                    src={product.image?.[0]?.url || product.image?.[0] || '/api/placeholder/400/400'}
+                                    src={product.primaryImage?.url || product.primaryImage || '/api/placeholder/400/400'}
                                     alt={product.product || product.name}
                                     className="w-full h-full object-cover"
                                     onError={(e) => {
@@ -672,17 +673,6 @@ export default function BestsellersPage() {
                     </section>
                 </div>
             </main>
-
-            {/* Optimized Footer */}
-            <footer className="mt-12 bg-gray-800">
-                <div className="px-4 py-6 mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <div className="text-center">
-                        <p className="text-sm text-gray-400">
-                            © 2025 Pawsitivity. Making roads safer for animals, one collar at a time.
-                        </p>
-                    </div>
-                </div>
-            </footer>
 
             {/* Product Details Modal */}
             <ProductDetailsModal
