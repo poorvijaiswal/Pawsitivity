@@ -1,59 +1,4 @@
-// Get all products with offers
-export const getProductsWithOffers = async () => {
-  try {
-    const response = await PRODUCTS_API_URL.get('/offers/all');
-    return {
-      success: true,
-      products: response.data.products || [],
-      message: response.data.message || 'Offers fetched successfully'
-    };
-  } catch (error) {
-    console.error("Get Products With Offers API Error:", error.response?.data || error.message);
-    return {
-      success: false,
-      message: error.response?.data?.message || 'Failed to fetch offers',
-      error: error.message
-    };
-  }
-};
 
-// Add/Update offer for a product (admin only)
-export const addProductOffer = async (productId, offerData) => {
-  try {
-    const response = await PRODUCTS_API_URL.put(`/${productId}/add-offer`, offerData);
-    return {
-      success: true,
-      product: response.data.product,
-      message: response.data.message || 'Offer added/updated successfully'
-    };
-  } catch (error) {
-    console.error("Add Product Offer API Error:", error.response?.data || error.message);
-    return {
-      success: false,
-      message: error.response?.data?.message || 'Failed to add/update offer',
-      error: error.message
-    };
-  }
-};
-
-// Remove offer from a product (admin only)
-export const removeProductOffer = async (productId) => {
-  try {
-    const response = await PRODUCTS_API_URL.put(`/${productId}/remove-offer`);
-    return {
-      success: true,
-      product: response.data.product,
-      message: response.data.message || 'Offer removed successfully'
-    };
-  } catch (error) {
-    console.error("Remove Product Offer API Error:", error.response?.data || error.message);
-    return {
-      success: false,
-      message: error.response?.data?.message || 'Failed to remove offer',
-      error: error.message
-    };
-  }
-};
 import axios from "axios";
 // import multer from 'multer';
 // import path from 'path';
@@ -424,6 +369,64 @@ export const getAllOrders = async () => {
     return {
       success: false,
       message: error.response?.data?.message || 'Failed to fetch all orders',
+      error: error.message
+    };
+  }
+};
+
+// Add offers
+
+export const addProductOffer = async (productId, offerData) => {
+  try {
+    const response = await PRODUCTS_API_URL.put(`/${productId}/add-offer`, offerData);
+    return {
+      success: true,
+      data: response.data,
+      message: 'Product offer added successfully'
+    };
+  } catch (error) {
+    console.error("Add Product Offer API Error:", error.response?.data || error.message);
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Failed to add product offer',
+      error: error.message
+    };
+  }
+};
+
+// Get all products with offers
+export const getProductsWithOffers = async () => {
+  try {
+    const response = await PRODUCTS_API_URL.get('/offers/all');
+    return {
+      success: true,
+      products: response.data.products || [],
+      message: response.data.message || 'Offers fetched successfully'
+    };
+  } catch (error) {
+    console.error("Get Products With Offers API Error:", error.response?.data || error.message);
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Failed to fetch offers',
+      error: error.message
+    };
+  }
+};
+
+// Remove offer from a product (admin only)
+export const removeProductOffer = async (productId) => {
+  try {
+    const response = await PRODUCTS_API_URL.put(`/${productId}/remove-offer`);
+    return {
+      success: true,
+      product: response.data.product,
+      message: response.data.message || 'Offer removed successfully'
+    };
+  } catch (error) {
+    console.error("Remove Product Offer API Error:", error.response?.data || error.message);
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Failed to remove offer',
       error: error.message
     };
   }

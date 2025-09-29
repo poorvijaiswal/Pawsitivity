@@ -1,13 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaTimes, FaUpload } from "react-icons/fa";
+import {
+  FaPlus,
+  FaEdit,
+  FaTrash,
+  FaSearch,
+  FaTimes,
+  FaUpload,
+} from "react-icons/fa";
 import { useAuth } from "../Auth/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { motion } from 'framer-motion';
 import {
   getAllProductsByAdmin,
   deleteProduct,
   createProduct,
   updateProduct,
+  addProductOffer,
+  removeProductOffer
 } from "../../Apis/product_api";
 import { Feather } from "lucide-react";
 
@@ -114,32 +122,37 @@ export default function AdminProduct() {
     try {
       const formData = new FormData();
       // Add product data according to the product model
-      formData.append('product', selectedProduct.product);
-      formData.append('detail', selectedProduct.detail);
-      formData.append('category', selectedProduct.category);
-      formData.append('price', selectedProduct.price);
-      formData.append('quantity', selectedProduct.quantity);
-      formData.append('isActive', selectedProduct.isActive);
-      formData.append('rating', selectedProduct.rating);
-      formData.append('noOfReviews', selectedProduct.noOfReviews);
+      formData.append("product", selectedProduct.product);
+      formData.append("detail", selectedProduct.detail);
+      formData.append("category", selectedProduct.category);
+      formData.append("price", selectedProduct.price);
+      formData.append("quantity", selectedProduct.quantity);
+      formData.append("isActive", selectedProduct.isActive);
+      formData.append("rating", selectedProduct.rating);
+      formData.append("noOfReviews", selectedProduct.noOfReviews);
       // Add tags, features, specifications as arrays (not JSON strings)
       if (selectedProduct.tags && selectedProduct.tags.length > 0) {
-        selectedProduct.tags.forEach(tag => formData.append('tags', tag));
+        selectedProduct.tags.forEach((tag) => formData.append("tags", tag));
       }
       if (selectedProduct.features && selectedProduct.features.length > 0) {
-        selectedProduct.features.forEach(f => formData.append('features', f));
+        selectedProduct.features.forEach((f) => formData.append("features", f));
       }
-      if (selectedProduct.specifications && selectedProduct.specifications.length > 0) {
-        selectedProduct.specifications.forEach(s => formData.append('specifications', s));
+      if (
+        selectedProduct.specifications &&
+        selectedProduct.specifications.length > 0
+      ) {
+        selectedProduct.specifications.forEach((s) =>
+          formData.append("specifications", s)
+        );
       }
       // Add images: first is primary, rest are secondary
       if (selectedImages.length === 0) {
-        alert('At least one image is required.');
+        alert("At least one image is required.");
         return;
       }
-      formData.append('primaryImage', selectedImages[0]);
+      formData.append("primaryImage", selectedImages[0]);
       for (let i = 1; i < selectedImages.length; i++) {
-        formData.append('secondaryImages', selectedImages[i]);
+        formData.append("secondaryImages", selectedImages[i]);
       }
       let result;
       const isEditing = selectedProduct._id;
@@ -150,27 +163,35 @@ export default function AdminProduct() {
       }
       if (result.success) {
         await fetchProductsFromBackend();
-        alert(isEditing ? 'Product updated successfully!' : 'Product created successfully!');
+        alert(
+          isEditing
+            ? "Product updated successfully!"
+            : "Product created successfully!"
+        );
         setIsFormOpen(false);
         setSelectedProduct(null);
         setSelectedImages([]);
         setImagePreviewUrls([]);
       } else {
-        alert(`Failed to ${isEditing ? 'update' : 'create'} product: ${result.message}`);
+        alert(
+          `Failed to ${isEditing ? "update" : "create"} product: ${
+            result.message
+          }`
+        );
       }
     } catch (error) {
-      console.error('Error saving product:', error);
-      alert('An error occurred while saving the product.');
+      console.error("Error saving product:", error);
+      alert("An error occurred while saving the product.");
     }
   };
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     let processedValue = value;
-    
-    if (type === 'number') {
+
+    if (type === "number") {
       processedValue = Number(value);
-    } else if (type === 'checkbox') {
+    } else if (type === "checkbox") {
       processedValue = checked;
     }
 
@@ -183,19 +204,19 @@ export default function AdminProduct() {
   const handleImageSelect = (e) => {
     const files = Array.from(e.target.files);
     setSelectedImages(files);
-    
+
     // Create preview URLs
-    const previewUrls = files.map(file => URL.createObjectURL(file));
+    const previewUrls = files.map((file) => URL.createObjectURL(file));
     setImagePreviewUrls(previewUrls);
   };
 
   const removeImage = (index) => {
     const newImages = selectedImages.filter((_, i) => i !== index);
     const newPreviewUrls = imagePreviewUrls.filter((_, i) => i !== index);
-    
+
     // Revoke the removed URL to prevent memory leaks
     URL.revokeObjectURL(imagePreviewUrls[index]);
-    
+
     setSelectedImages(newImages);
     setImagePreviewUrls(newPreviewUrls);
   };
@@ -246,6 +267,13 @@ export default function AdminProduct() {
               <FaPlus />
               <span>Add Product</span>
             </button>
+            <button
+              onClick={() => navigate("/admin/addOffer")}
+              className="flex items-center justify-center px-4 py-2 space-x-2 text-sm text-white transition-all bg-yellow-600 rounded-lg hover:bg-yellow-700 shadow-md hover:shadow-lg"
+            >
+              <FaPlus />
+              <span>Add Offer</span>
+            </button>
           </div>
         </div>
       </div>
@@ -290,54 +318,67 @@ export default function AdminProduct() {
                       <span className="inline-flex px-2 py-1 text-xs font-semibold leading-4 text-yellow-800 bg-yellow-100 rounded-full mt-1">
                         {product.category}
                       </span>
-                        {/* Offer Badges */}
-                        {product.discount > 0 && (
-                          <span className="ml-2 inline-flex px-2 py-1 text-xs font-semibold leading-4 text-green-800 bg-green-100 rounded-full">
-                            {product.discount}% OFF
-                          </span>
-                        )}
-                        {product.promotion && product.promotion !== "" && (
-                          <span className="ml-2 inline-flex px-2 py-1 text-xs font-semibold leading-4 text-blue-800 bg-blue-100 rounded-full">
-                            {typeof product.promotion === "string" ? product.promotion : product.promotion.type}
-                          </span>
-                        )}
-                        {product.bogoOffer && (
-                          <span className="ml-2 inline-flex px-2 py-1 text-xs font-semibold leading-4 text-purple-800 bg-purple-100 rounded-full">
-                            BOGO
-                          </span>
-                        )}
+                      {/* Offer Badges */}
+                      {product.discount > 0 && (
+                        <span className="ml-2 inline-flex px-2 py-1 text-xs font-semibold leading-4 text-green-800 bg-green-100 rounded-full">
+                          {product.discount}% OFF
+                        </span>
+                      )}
+                      {product.promotion && product.promotion !== "" && (
+                        <span className="ml-2 inline-flex px-2 py-1 text-xs font-semibold leading-4 text-blue-800 bg-blue-100 rounded-full">
+                          {typeof product.promotion === "string"
+                            ? product.promotion
+                            : product.promotion.type}
+                        </span>
+                      )}
+                      {product.bogoOffer && (
+                        <span className="ml-2 inline-flex px-2 py-1 text-xs font-semibold leading-4 text-purple-800 bg-purple-100 rounded-full">
+                          BOGO
+                        </span>
+                      )}
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-3 mb-3 text-sm">
                     <div>
                       <p className="font-medium text-gray-900">
                         ₹{product.discountedPrice ?? product.price}
                       </p>
                       <p className="text-xs text-gray-500">Price</p>
-                        {/* Offer Details */}
-                        {product.discount > 0 && (
-                          <p className="text-xs text-green-600">Discount: {product.discount}%</p>
-                        )}
-                        {product.promotion && product.promotion !== "" && (
-                          <p className="text-xs text-blue-600">Promotion: {typeof product.promotion === "string" ? product.promotion : product.promotion.type}</p>
-                        )}
-                        {product.bogoOffer && (
-                          <p className="text-xs text-purple-600">BOGO Offer Active</p>
-                        )}
+                      {/* Offer Details */}
+                      {product.discount > 0 && (
+                        <p className="text-xs text-green-600">
+                          Discount: {product.discount}%
+                        </p>
+                      )}
+                      {product.promotion && product.promotion !== "" && (
+                        <p className="text-xs text-blue-600">
+                          Promotion:{" "}
+                          {typeof product.promotion === "string"
+                            ? product.promotion
+                            : product.promotion.type}
+                        </p>
+                      )}
+                      {product.bogoOffer && (
+                        <p className="text-xs text-purple-600">
+                          BOGO Offer Active
+                        </p>
+                      )}
                     </div>
                     <div>
                       <p className="font-medium text-gray-900">
                         {product.quantity ?? product.stock}
                       </p>
-                      <p className={`text-xs font-medium ${
-                        product.isActive ? "text-green-600" : "text-red-600"
-                      }`}>
+                      <p
+                        className={`text-xs font-medium ${
+                          product.isActive ? "text-green-600" : "text-red-600"
+                        }`}
+                      >
                         {product.isActive ? "In Stock" : "Out of Stock"}
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <div className="text-sm">
                       <span className="font-medium text-gray-900">
@@ -418,7 +459,10 @@ export default function AdminProduct() {
                           <div className="w-12 h-12 overflow-hidden bg-gray-100 rounded-lg border border-gray-200 flex-shrink-0">
                             {product.primaryImage ? (
                               <img
-                                src={product.primaryImage.url || product.primaryImage}
+                                src={
+                                  product.primaryImage.url ||
+                                  product.primaryImage
+                                }
                                 alt={product.product}
                                 className="object-cover w-full h-full"
                               />
@@ -435,24 +479,27 @@ export default function AdminProduct() {
                             <div className="text-sm text-gray-500">
                               {product.user?.firstName} {product.user?.lastName}
                             </div>
-                              {/* Offer Badges */}
-                              <div className="mt-1 flex flex-wrap gap-1">
-                                {product.discount > 0 && (
-                                  <span className="inline-flex px-2 py-1 text-xs font-semibold leading-4 text-green-800 bg-green-100 rounded-full">
-                                    {product.discount}% OFF
-                                  </span>
-                                )}
-                                {product.promotion && product.promotion !== "" && (
+                            {/* Offer Badges */}
+                            <div className="mt-1 flex flex-wrap gap-1">
+                              {product.discount > 0 && (
+                                <span className="inline-flex px-2 py-1 text-xs font-semibold leading-4 text-green-800 bg-green-100 rounded-full">
+                                  {product.discount}% OFF
+                                </span>
+                              )}
+                              {product.promotion &&
+                                product.promotion !== "" && (
                                   <span className="inline-flex px-2 py-1 text-xs font-semibold leading-4 text-blue-800 bg-blue-100 rounded-full">
-                                    {typeof product.promotion === "string" ? product.promotion : product.promotion.type}
+                                    {typeof product.promotion === "string"
+                                      ? product.promotion
+                                      : product.promotion.type}
                                   </span>
                                 )}
-                                {product.bogoOffer && (
-                                  <span className="inline-flex px-2 py-1 text-xs font-semibold leading-4 text-purple-800 bg-purple-100 rounded-full">
-                                    BOGO
-                                  </span>
-                                )}
-                              </div>
+                              {product.bogoOffer && (
+                                <span className="inline-flex px-2 py-1 text-xs font-semibold leading-4 text-purple-800 bg-purple-100 rounded-full">
+                                  BOGO
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </td>
@@ -465,16 +512,25 @@ export default function AdminProduct() {
                         <div className="text-sm font-bold text-gray-900">
                           ₹{product.discountedPrice ?? product.price}
                         </div>
-                          {/* Offer Details */}
-                          {product.discount > 0 && (
-                            <div className="text-xs text-green-600">Discount: {product.discount}%</div>
-                          )}
-                          {product.promotion && product.promotion !== "" && (
-                            <div className="text-xs text-blue-600">Promotion: {typeof product.promotion === "string" ? product.promotion : product.promotion.type}</div>
-                          )}
-                          {product.bogoOffer && (
-                            <div className="text-xs text-purple-600">BOGO Offer Active</div>
-                          )}
+                        {/* Offer Details */}
+                        {product.discount > 0 && (
+                          <div className="text-xs text-green-600">
+                            Discount: {product.discount}%
+                          </div>
+                        )}
+                        {product.promotion && product.promotion !== "" && (
+                          <div className="text-xs text-blue-600">
+                            Promotion:{" "}
+                            {typeof product.promotion === "string"
+                              ? product.promotion
+                              : product.promotion.type}
+                          </div>
+                        )}
+                        {product.bogoOffer && (
+                          <div className="text-xs text-purple-600">
+                            BOGO Offer Active
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900 font-medium">
@@ -551,7 +607,7 @@ export default function AdminProduct() {
             {/* Modal Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50 sm:p-6">
               <h3 className="text-lg font-bold text-gray-900 sm:text-xl">
-                {selectedProduct._id ? 'Edit Product' : 'Add New Product'}
+                {selectedProduct._id ? "Edit Product" : "Add New Product"}
               </h3>
               <button
                 onClick={() => setIsFormOpen(false)}
@@ -563,11 +619,16 @@ export default function AdminProduct() {
 
             {/* Modal Body */}
             <div className="overflow-y-auto max-h-[calc(95vh-120px)] bg-white">
-              <form onSubmit={handleSaveProduct} className="p-4 space-y-6 sm:p-6">
+              <form
+                onSubmit={handleSaveProduct}
+                className="p-4 space-y-6 sm:p-6"
+              >
                 {/* Basic Information */}
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="sm:col-span-2">
-                    <label className="block mb-2 text-sm font-medium text-gray-700">Product Name *</label>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">
+                      Product Name *
+                    </label>
                     <input
                       type="text"
                       name="product"
@@ -579,7 +640,9 @@ export default function AdminProduct() {
                   </div>
 
                   <div>
-                    <label className="block mb-2 text-sm font-medium text-gray-700">Category *</label>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">
+                      Category *
+                    </label>
                     <select
                       name="category"
                       value={selectedProduct.category}
@@ -598,7 +661,9 @@ export default function AdminProduct() {
                   </div>
 
                   <div>
-                    <label className="block mb-2 text-sm font-medium text-gray-700">Price (₹) *</label>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">
+                      Price (₹) *
+                    </label>
                     <input
                       type="number"
                       name="price"
@@ -612,7 +677,9 @@ export default function AdminProduct() {
                   </div>
 
                   <div>
-                    <label className="block mb-2 text-sm font-medium text-gray-700">Discount (%)</label>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">
+                      Discount (%)
+                    </label>
                     <input
                       type="number"
                       name="discount"
@@ -627,10 +694,12 @@ export default function AdminProduct() {
                   </div>
 
                   <div>
-                    <label className="block mb-2 text-sm font-medium text-gray-700">Promotion</label>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">
+                      Promotion
+                    </label>
                     <select
                       name="promotion"
-                      value={selectedProduct.promotion || ''}
+                      value={selectedProduct.promotion || ""}
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
                     >
@@ -643,7 +712,9 @@ export default function AdminProduct() {
                   </div>
 
                   <div className="sm:col-span-2">
-                    <label className="block mb-2 text-sm font-medium text-gray-700">Quantity *</label>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">
+                      Quantity *
+                    </label>
                     <input
                       type="number"
                       name="quantity"
@@ -658,7 +729,9 @@ export default function AdminProduct() {
 
                 {/* Description */}
                 <div>
-                  <label className="block mb-2 text-sm font-medium text-gray-700">Product Details</label>
+                  <label className="block mb-2 text-sm font-medium text-gray-700">
+                    Product Details
+                  </label>
                   <textarea
                     name="detail"
                     value={selectedProduct.detail}
@@ -671,17 +744,25 @@ export default function AdminProduct() {
 
                 {/* Image Upload */}
                 <div>
-                  <label className="block mb-2 text-sm font-medium text-gray-700">Product Images</label>
-                  <div className="mb-2 text-xs text-gray-500">First image will be used as <b>Primary Image</b>. Others will be <b>Secondary Images</b>.</div>
+                  <label className="block mb-2 text-sm font-medium text-gray-700">
+                    Product Images
+                  </label>
+                  <div className="mb-2 text-xs text-gray-500">
+                    First image will be used as <b>Primary Image</b>. Others
+                    will be <b>Secondary Images</b>.
+                  </div>
                   {/* Image Upload Area */}
                   <div className="mb-4">
                     <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-yellow-300 border-dashed rounded-lg cursor-pointer bg-yellow-50 hover:bg-yellow-100">
                       <div className="flex flex-col items-center justify-center pt-5 pb-6">
                         <FaUpload className="w-8 h-8 mb-4 text-yellow-500" />
                         <p className="mb-2 text-sm text-yellow-500">
-                          <span className="font-semibold">Click to upload</span> or drag and drop
+                          <span className="font-semibold">Click to upload</span>{" "}
+                          or drag and drop
                         </p>
-                        <p className="text-xs text-yellow-500">PNG, JPG, GIF up to 10MB each</p>
+                        <p className="text-xs text-yellow-500">
+                          PNG, JPG, GIF up to 10MB each
+                        </p>
                       </div>
                       <input
                         type="file"
@@ -702,7 +783,13 @@ export default function AdminProduct() {
                             alt={`Preview ${index + 1}`}
                             className="w-full h-24 object-cover rounded-lg border border-gray-300"
                           />
-                          <span className={`absolute top-1 left-1 px-2 py-0.5 text-xs rounded bg-black/70 text-white ${index === 0 ? 'font-bold' : ''}`}>{index === 0 ? 'Primary' : 'Secondary'}</span>
+                          <span
+                            className={`absolute top-1 left-1 px-2 py-0.5 text-xs rounded bg-black/70 text-white ${
+                              index === 0 ? "font-bold" : ""
+                            }`}
+                          >
+                            {index === 0 ? "Primary" : "Secondary"}
+                          </span>
                           <button
                             type="button"
                             onClick={() => removeImage(index)}
@@ -716,67 +803,102 @@ export default function AdminProduct() {
                   )}
 
                   {/* Existing Images (for edit mode) */}
-                  {selectedProduct.image && selectedProduct.image.length > 0 && imagePreviewUrls.length === 0 && (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
-                      {selectedProduct.image.map((img, index) => (
-                        <div key={index} className="relative">
-                          <img
-                            src={img.url}
-                            alt={`Product ${index + 1}`}
-                            className="w-full h-24 object-cover rounded-lg border border-gray-300"
-                          />
-                          <span className="absolute bottom-1 left-1 bg-black bg-opacity-50 text-white text-xs px-1 rounded">
-                            Current
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  {selectedProduct.image &&
+                    selectedProduct.image.length > 0 &&
+                    imagePreviewUrls.length === 0 && (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
+                        {selectedProduct.image.map((img, index) => (
+                          <div key={index} className="relative">
+                            <img
+                              src={img.url}
+                              alt={`Product ${index + 1}`}
+                              className="w-full h-24 object-cover rounded-lg border border-gray-300"
+                            />
+                            <span className="absolute bottom-1 left-1 bg-black bg-opacity-50 text-white text-xs px-1 rounded">
+                              Current
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                 </div>
 
                 {/* Tags, Features, Specifications */}
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   {/* Tags */}
                   <div>
-                    <label className="block mb-2 text-sm font-medium text-gray-700">Tags (comma separated)</label>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">
+                      Tags (comma separated)
+                    </label>
                     <input
                       type="text"
                       name="tags"
-                      value={selectedProduct.tags ? selectedProduct.tags.join(', ') : ''}
-                      onChange={e => setSelectedProduct({
-                        ...selectedProduct,
-                        tags: e.target.value.split(',').map(tag => tag.trim()).filter(Boolean)
-                      })}
+                      value={
+                        selectedProduct.tags
+                          ? selectedProduct.tags.join(", ")
+                          : ""
+                      }
+                      onChange={(e) =>
+                        setSelectedProduct({
+                          ...selectedProduct,
+                          tags: e.target.value
+                            .split(",")
+                            .map((tag) => tag.trim())
+                            .filter(Boolean),
+                        })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
                       placeholder="e.g. eco-friendly, durable, waterproof"
                     />
                   </div>
                   {/* Features */}
                   <div>
-                    <label className="block mb-2 text-sm font-medium text-gray-700">Features (comma separated)</label>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">
+                      Features (comma separated)
+                    </label>
                     <input
                       type="text"
                       name="features"
-                      value={selectedProduct.features ? selectedProduct.features.join(', ') : ''}
-                      onChange={e => setSelectedProduct({
-                        ...selectedProduct,
-                        features: e.target.value.split(',').map(f => f.trim()).filter(Boolean)
-                      })}
+                      value={
+                        selectedProduct.features
+                          ? selectedProduct.features.join(", ")
+                          : ""
+                      }
+                      onChange={(e) =>
+                        setSelectedProduct({
+                          ...selectedProduct,
+                          features: e.target.value
+                            .split(",")
+                            .map((f) => f.trim())
+                            .filter(Boolean),
+                        })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
                       placeholder="e.g. lightweight, washable, adjustable"
                     />
                   </div>
                   {/* Specifications */}
                   <div>
-                    <label className="block mb-2 text-sm font-medium text-gray-700">Specifications (comma separated)</label>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">
+                      Specifications (comma separated)
+                    </label>
                     <input
                       type="text"
                       name="specifications"
-                      value={selectedProduct.specifications ? selectedProduct.specifications.join(', ') : ''}
-                      onChange={e => setSelectedProduct({
-                        ...selectedProduct,
-                        specifications: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
-                      })}
+                      value={
+                        selectedProduct.specifications
+                          ? selectedProduct.specifications.join(", ")
+                          : ""
+                      }
+                      onChange={(e) =>
+                        setSelectedProduct({
+                          ...selectedProduct,
+                          specifications: e.target.value
+                            .split(",")
+                            .map((s) => s.trim())
+                            .filter(Boolean),
+                        })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
                       placeholder="e.g. size: M, color: red, material: nylon"
                     />
@@ -796,7 +918,7 @@ export default function AdminProduct() {
                     type="submit"
                     className="flex-1 px-4 py-2 text-base font-medium text-white bg-yellow-600 border border-transparent rounded-lg shadow-sm hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-all"
                   >
-                    {selectedProduct._id ? 'Update Product' : 'Create Product'}
+                    {selectedProduct._id ? "Update Product" : "Create Product"}
                   </button>
                 </div>
               </form>

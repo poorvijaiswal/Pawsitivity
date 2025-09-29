@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { FaPlus, FaTrash, FaArrowLeft, FaTimes } from "react-icons/fa";
-import { motion } from "framer-motion";
 import { useAuth } from "../Auth/AuthContext";
 import { useNavigate } from "react-router-dom";
 import AdminProduct from "../Admin/AdminProduct";

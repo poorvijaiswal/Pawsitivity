@@ -41,6 +41,7 @@ import Order from './Shop/OrderPage'
 
 // Context Providers
 import { CartProvider } from './Context/CartContext'
+import AddOfferPage from './Components/Admin/AddOfferPage';
 
 // Error Boundary Component
 class ErrorBoundary extends Component {
@@ -179,6 +180,8 @@ function AppContent() {
           <Route path="/address" element={<LayoutWithFooter><AddressPage /></LayoutWithFooter>} />
           <Route path="/checkout" element={<LayoutWithFooter><CheckoutPage /></LayoutWithFooter>} />
           <Route path="/Order" element={<LayoutWithFooter><Order /></LayoutWithFooter>} />
+          <Route path="/admin/add-offer" element={<LayoutWithFooter><AddOfferPage /></LayoutWithFooter>} />
+
           
           {/* Cart route (no footer for better UX) */}
           <Route path="/cart" element={<CartPage />} />

@@ -38,6 +38,11 @@ const ProductCard = React.memo(({ product, onAddToCart, cart, onQuantityChange, 
     const productReviewCount = product.noOfReviews || 0;
     const productCategory = product.category || 'Pet Products';
     const productDiscount = product.discount || 0;
+    // Promotion fields
+    const productPromotion = product.promotion;
+    const bogoOffer = product.bogoOffer;
+    // Only show promotion badge if not NONE, not empty, and not null
+    const showPromotionBadge = productPromotion && productPromotion !== "" && productPromotion !== "NONE";
 
     const handleProductClick = useCallback(() => {
         navigate(`/product/${productId}`);
@@ -68,9 +73,20 @@ const ProductCard = React.memo(({ product, onAddToCart, cart, onQuantityChange, 
     // Quantity controls for products already in cart
     return (
         <article className="relative p-4 transition-all duration-200 bg-white border rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1">
+                        {/* Promotion Offer Badge (above discount) */}
+                        {showPromotionBadge && (
+                                <div className="absolute top-2 right-2 bg-orange-600 text-white px-2 py-1 rounded-md text-xs font-bold z-20">
+                                        {typeof productPromotion === "string" ? productPromotion.replace('_', ' ') : productPromotion.type}
+                                </div>
+                        )}
+            {bogoOffer && (
+                <div className="absolute top-2 left-2 bg-purple-600 text-white px-2 py-1 rounded-md text-xs font-bold z-20" style={{ left: '90px' }}>
+                    BOGO
+                </div>
+            )}
             {/* Discount Badge */}
             {productDiscount > 0 && (
-                <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-md text-xs font-bold z-10">
+                <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-md text-xs font-bold z-10" style={{ left: (showPromotionBadge ? '45px' : '0px') }}>
                     {productDiscount}% OFF
                 </div>
             )}

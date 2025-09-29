@@ -247,28 +247,3 @@ export const deleteAddress = async (addressId) => {
     };
   }
 };
-
-// order api
-const ORDER_API_URL = axios.create({
-  baseURL: "http://localhost:8000/api/v1/order",
-  headers: {
-    'Content-Type': 'application/json'
-  }
-});
-export const createOrder = async (orderData) => {
-  try {
-    const response = await ORDER_API_URL.post('/new-order', orderData);
-    return {
-      success: true,
-      message: 'Order created successfully',
-      data: response.data
-    };
-  } catch (error) {
-    console.error("Create Order API Error:", error.response?.data || error.message);
-    return {
-      success: false,
-      message: error.response?.data?.message || 'Failed to create order',
-      error: error.message
-    };
-  }
-};
