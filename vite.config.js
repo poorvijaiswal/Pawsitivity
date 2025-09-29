@@ -4,8 +4,34 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  // Add proxy configuration for backend API
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/api/, '/api/v1')
+      },
+      '/create-order': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false
+      },
+      '/verify-payment': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false
+      }
+    },
+    fs: {
+      strict: false
+    },
+    hmr: {
+      overlay: false
+    }
+  },
   build: {
-    // Optimize build performance
     rollupOptions: {
       output: {
         manualChunks: {
@@ -18,15 +44,13 @@ export default defineConfig({
       }
     },
     // Reduce chunk size warnings threshold
-    chunkSizeWarningLimit: 1000
-  },
-  // Optimize dev server
-  server: {
-    // Enable file system caching
-    fs: {
-      strict: false
-    }
+    chunkSizeWarningLimit: 1000,
+    minify: 'esbuild',
+    sourcemap: false
   },
   // Asset optimization
-  assetsInclude: ['**/*.jpg', '**/*.jpeg', '**/*.png', '**/*.webp']
+  assetsInclude: ['**/*.jpg', '**/*.jpeg', '**/*.png', '**/*.webp'],
+  define: {
+    global: 'globalThis'
+  }
 })

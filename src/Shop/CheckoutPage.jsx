@@ -1,44 +1,40 @@
+// src/pages/CheckoutPage.jsx
+import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAddresses } from "../Apis/auth";
 import { useCart } from "../Context/CartContext";
-import { createOrder } from "../Apis/product_api";
-import { CreditCard, Banknote, QrCode, Smartphone, ChevronDown, CheckCircle2, Circle } from 'lucide-react';
+import { createOrder as createAppOrder } from "../Apis/product_api";
 
-const CardTypeIcons = {
-  VISA: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/1200px-Visa_Inc._logo.svg.png",
-  MASTERCARD: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/MasterCard_Logo.svg/1200px-MasterCard_Logo.svg.png",
-  AMEX: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/American_Express_logo.svg/1200px-American_Express_logo.svg.png",
-  DISCOVER: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Discover_Card_logo.svg/1200px-Discover_Card_logo.svg.png",
-  RUPAY: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/RuPay-Logo.png/1200px-RuPay-Logo.png"
+// Razorpay script loader
+const loadRazorpayScript = () => {
+  return new Promise((resolve) => {
+    if (window.Razorpay) {
+      resolve(true);
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => {
+      resolve(true);
+    };
+    script.onerror = () => {
+      resolve(false);
+    };
+    document.body.appendChild(script);
+  });
 };
-
-
 
 export default function CheckoutPage() {
   const { cart } = useCart();
   const [address, setAddress] = useState(null);
-  const [processing, setProcessing] = useState(false);
   const [addressLoading, setAddressLoading] = useState(true);
   const [addressError, setAddressError] = useState(null);
   const navigate = useNavigate();
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('saved_card');
-  const [useSavedCard, setUseSavedCard] = useState(true);
 
-  const handlePaymentMethodChange = (method) => {
-    setSelectedPaymentMethod(method);
-    setUseSavedCard(method === 'saved_card');
-  };
-
-  const paymentMethods = [
-    { id: 'saved_card', label: 'VISA ending in 3681', icon: CardTypeIcons.VISA, nickname: 'Sweta Raj Patel' },
-    { id: 'new_card', label: 'Credit or debit card', icon: <CreditCard className="w-5 h-5" /> },
-    { id: 'net_banking', label: 'Net Banking', icon: <Banknote className="w-5 h-5" /> },
-    { id: 'upi_qr', label: 'Scan and Pay with UPI', icon: <QrCode className="w-5 h-5" /> },
-    { id: 'upi_app', label: 'Other UPI Apps', icon: <Smartphone className="w-5 h-5" /> },
-    { id: 'emi', label: 'EMI Unavailable', icon: null, disabled: true },
-    { id: 'cod', label: 'Cash on Delivery/Pay on Delivery', icon: null },
-  ];
+  // Local UI states
+  const [orderLoading, setOrderLoading] = useState(false);
+  const [orderError, setOrderError] = useState(null);
 
   useEffect(() => {
     const userId = JSON.parse(localStorage.getItem("user"))?._id;
@@ -52,6 +48,10 @@ export default function CheckoutPage() {
           setAddressError("No address found.");
         }
         setAddressLoading(false);
+      }).catch(err => {
+        setAddress(null);
+        setAddressError("Failed to load addresses.");
+        setAddressLoading(false);
       });
     } else {
       setAddress(null);
@@ -62,10 +62,25 @@ export default function CheckoutPage() {
 
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-  const [orderLoading, setOrderLoading] = useState(false);
-  const [orderError, setOrderError] = useState(null);
+  // Build order items payload for your app DB
+  const buildAppOrderPayload = (paymentInfo = {}) => ({
+    shippingInfo: { address: address?._id },
+    orderItems: cart.map(item => ({
+      name: item.name,
+      product: item.id,
+      quantity: item.quantity,
+      price: item.price
+    })),
+    paymentInfo, // e.g. { status: "Paid", method: "Razorpay", razorpay_payment_id: "..."}
+    taxPrice: 0,
+    shippingPrice: 0,
+    totalPrice: total
+  });
 
+  // Main proceed: single button that handles both Magic Checkout (online + COD)
   const handleProceedOrder = async () => {
+    setOrderError(null);
+
     if (!address || !address._id) {
       setOrderError("No address selected.");
       return;
@@ -74,30 +89,140 @@ export default function CheckoutPage() {
       setOrderError("No items in cart.");
       return;
     }
+
     setOrderLoading(true);
-    setOrderError(null);
-    // Prepare order data
-    const orderData = {
-      shippingInfo: { address: address._id },
-      orderItems: cart.map(item => ({
-        name: item.name,
-        product: item.id,
-        quantity: item.quantity,
-        price: item.price
-      })),
-      paymentInfo: { status: "Pending" },
-      taxPrice: 0,
-      shippingPrice: 0
-    };
-    const result = await createOrder(orderData);
-    setOrderLoading(false);
-    if (result.success) {
-      navigate("/Order");
-    } else {
-      setOrderError(result.message || "Failed to place order.");
+
+    try {
+      // Load Razorpay script first
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        throw new Error('Failed to load Razorpay SDK. Please check your internet connection.');
+      }
+
+      // 1) Create Razorpay Order (server-side) with better error handling
+      const backendCreateOrderUrl = `${import.meta.env.VITE_BACKEND_URL || "http://localhost:5000"}/create-order`;
+      
+      const rzResp = await axios.post(backendCreateOrderUrl, { 
+        amount: total,
+        currency: 'INR',
+        receipt: `order_${Date.now()}`,
+        notes: {
+          userId: JSON.parse(localStorage.getItem("user"))?._id,
+          items: cart.length
+        }
+      }, {
+        timeout: 10000, // 10 second timeout
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        withCredentials: false
+      });
+
+      const rzOrder = rzResp.data;
+
+      if (!rzOrder || !rzOrder.id) {
+        throw new Error("Failed to create Razorpay order.");
+      }
+
+      // 2) Open Razorpay Checkout
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        order_id: rzOrder.id,
+        amount: rzOrder.amount,
+        currency: rzOrder.currency || "INR",
+        name: "Pawsitivity",
+        description: "Your order payment",
+        prefill: {
+          name: address.fullName || "",
+          email: address.email || "",
+          contact: address.phoneNumber || "",
+        },
+        theme: { color: "#EF6C00" },
+
+        // Handler called on successful payment
+        handler: async function (response) {
+          try {
+            // Verify payment signature with backend
+            if (response && response.razorpay_payment_id && response.razorpay_order_id && response.razorpay_signature) {
+              const verifyUrl = `${import.meta.env.VITE_BACKEND_URL || "http://localhost:5000"}/verify-payment`;
+              const verifyResp = await axios.post(verifyUrl, {
+                order_id: response.razorpay_order_id,
+                payment_id: response.razorpay_payment_id,
+                signature: response.razorpay_signature
+              });
+
+              if (verifyResp.data && verifyResp.data.status === "success") {
+                // Create order in app database
+                const appOrderPayload = buildAppOrderPayload({
+                  status: "Paid",
+                  method: "Razorpay",
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_order_id: response.razorpay_order_id,
+                });
+
+                const appCreateResp = await createAppOrder(appOrderPayload);
+                if (appCreateResp.success) {
+                  setOrderLoading(false);
+                  navigate("/Order");
+                } else {
+                  throw new Error(appCreateResp.message || "Failed to save order in database.");
+                }
+              } else {
+                throw new Error("Payment verification failed.");
+              }
+            } else {
+              throw new Error("Invalid payment response received.");
+            }
+          } catch (err) {
+            console.error("Payment handler error:", err);
+            setOrderError(err.message || "Payment processing failed.");
+            setOrderLoading(false);
+          }
+        },
+
+        modal: {
+          ondismiss: function () {
+            setOrderLoading(false);
+          }
+        }
+      };
+
+      // Create and open Razorpay checkout
+      const rzp = new window.Razorpay(options);
+
+      rzp.on('payment.failed', function (response) {
+        console.error("Payment failed:", response.error);
+        setOrderError(`Payment failed: ${response.error.description || 'Please try again.'}`);
+        setOrderLoading(false);
+      });
+
+      rzp.open();
+
+    } catch (err) {
+      console.error("Checkout error:", err);
+      
+      let errorMessage = "Failed to start checkout.";
+      
+      if (err.code === 'ECONNABORTED' || err.message.includes('timeout')) {
+        errorMessage = "Request timeout. Please check your internet connection and try again.";
+      } else if (err.code === 'NETWORK_ERROR' || err.message.includes('Network Error')) {
+        errorMessage = "Network error. Please check if the server is running and try again.";
+      } else if (err.response?.status === 404) {
+        errorMessage = "Server endpoint not found. Please ensure the backend server is running on the correct port.";
+      } else if (err.response?.status >= 500) {
+        errorMessage = "Server error. Please try again later.";
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setOrderError(errorMessage);
+      setOrderLoading(false);
     }
   };
 
+  // QUICK GUARD: no items in cart
   if (!cart.length) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
@@ -138,86 +263,8 @@ export default function CheckoutPage() {
             ) : (
               <div className="text-red-600">{addressError || "No address found."}</div>
             )}
-                     <div className="flex-1 bg-white rounded-xl shadow-lg p-6 space-y-6">
-          <div className="flex items-center space-x-2 pb-4 border-b border-gray-200">
-            <h2 className="text-xl font-semibold">Place Your Order</h2>
           </div>
 
-          <div className="flex flex-col space-y-4">
-            <h3 className="text-sm text-gray-500 uppercase font-semibold">Credit & Debit Cards</h3>
-            
-            {/* Saved Card Section */}
-            <div
-              className={`flex items-center justify-between p-4 rounded-lg cursor-pointer transition-all duration-200 ${selectedPaymentMethod === 'saved_card' ? 'bg-blue-50 border-blue-500' : 'bg-gray-50 border-gray-200'} border-2`}
-              onClick={() => handlePaymentMethodChange('saved_card')}
-            >
-              <div className="flex items-center space-x-4">
-                {selectedPaymentMethod === 'saved_card' ? <CheckCircle2 className="w-6 h-6 text-blue-600" /> : <Circle className="w-6 h-6 text-gray-400" />}
-                {CardTypeIcons.VISA && (
-                  <img src={CardTypeIcons.VISA} alt="VISA" className="h-6 w-auto" />
-                )}
-                <div>
-                  <div className="flex items-center space-x-2">
-                    <span className="font-medium text-gray-700">VISA ending in 3681</span>
-                    <span className="text-sm font-light text-gray-500">VISA</span>
-                  </div>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="text-sm text-gray-600">Nickname</p>
-                <p className="font-medium text-gray-800">Sweta Raj Patel</p>
-              </div>
-            </div>
-
-            {/* New Card Section */}
-            <h3 className="text-sm text-gray-500 uppercase font-semibold pt-4">Another payment method</h3>
-            <div
-              className={`flex items-center p-4 rounded-lg cursor-pointer transition-all duration-200 ${selectedPaymentMethod === 'new_card' ? 'bg-blue-50 border-blue-500' : 'bg-gray-50 border-gray-200'} border-2`}
-              onClick={() => handlePaymentMethodChange('new_card')}
-            >
-              <div className="flex items-center space-x-4">
-                {selectedPaymentMethod === 'new_card' ? <CheckCircle2 className="w-6 h-6 text-blue-600" /> : <Circle className="w-6 h-6 text-gray-400" />}
-                <CreditCard className="w-6 h-6 text-gray-600" />
-                <span className="font-medium text-gray-700">Credit or debit card</span>
-              </div>
-            </div>
-            {selectedPaymentMethod === 'new_card' && (
-              <div className="p-4 bg-white rounded-b-xl border border-t-0 border-gray-200">
-                <div className="flex space-x-2 mb-4">
-                  <img src={CardTypeIcons.VISA} alt="VISA" className="h-5" />
-                  <img src={CardTypeIcons.MASTERCARD} alt="MasterCard" className="h-5" />
-                  <img src={CardTypeIcons.AMEX} alt="Amex" className="h-5" />
-                  <img src={CardTypeIcons.RUPAY} alt="RuPay" className="h-5" />
-                  <img src={CardTypeIcons.DISCOVER} alt="Discover" className="h-5" />
-                </div>
-                {/* Form to be added here */}
-              </div>
-            )}
-            
-            {/* Other Payment Methods */}
-            {paymentMethods.filter(m => m.id !== 'saved_card' && m.id !== 'new_card').map(method => (
-              <div
-                key={method.id}
-                className={`flex items-center p-4 rounded-lg cursor-pointer transition-all duration-200 ${selectedPaymentMethod === method.id ? 'bg-blue-50 border-blue-500' : 'bg-gray-50 border-gray-200'} border-2 ${method.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-                onClick={() => !method.disabled && handlePaymentMethodChange(method.id)}
-              >
-                <div className="flex items-center space-x-4">
-                  {selectedPaymentMethod === method.id ? <CheckCircle2 className="w-6 h-6 text-blue-600" /> : <Circle className="w-6 h-6 text-gray-400" />}
-                  {method.icon && (
-                    <div className="text-gray-600">{method.icon}</div>
-                  )}
-                  <div className="flex items-center space-x-1">
-                    <span className={`font-medium ${method.disabled ? 'text-gray-400' : 'text-gray-700'}`}>{method.label}</span>
-                    {method.id === 'net_banking' && <ChevronDown className="w-4 h-4 text-gray-500" />}
-                    {method.id === 'emi' && <span className="text-blue-500 text-sm font-medium">Why?</span>}
-                    {method.id === 'cod' && <span className="text-sm text-gray-500">Cash, UPI and Cards accepted. <a href="#" className="text-blue-500">Know more.</a></span>}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-          </div>
           {/* Order Summary */}
           <div>
             <h2 className="text-lg font-semibold mb-2 text-gray-800">Order Summary</h2>
@@ -240,26 +287,30 @@ export default function CheckoutPage() {
                 </div>
               ))}
             </div>
+
             <div className="flex justify-between items-center mt-6">
               <span className="font-semibold text-gray-800">Total</span>
               <span className="text-xl font-bold text-orange-600">₹{total}</span>
             </div>
           </div>
         </div>
+
         <div className="flex flex-col sm:flex-row justify-end items-center mt-8 gap-4">
           <button
             onClick={handleProceedOrder}
-            className={`w-full sm:w-auto px-8 py-3 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-700 transition ${orderLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-            disabled={orderLoading}
+            className={`w-full sm:w-auto px-8 py-3 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-700 transition ${orderLoading || !address ? 'opacity-50 cursor-not-allowed' : ''}`}
+            disabled={orderLoading || !address}
           >
-            {orderLoading ? "Placing Order..." : "Proceed to Order"}
+            {orderLoading ? "Processing..." : "Proceed to Payment"}
           </button>
-          {orderError && (
-            <div className="text-red-600 mt-2 text-sm">{orderError}</div>
-          )}
         </div>
+
+        {orderError && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mt-4">
+            <strong>Error:</strong> {orderError}
+          </div>
+        )}
       </div>
-   
     </div>
   );
 }
