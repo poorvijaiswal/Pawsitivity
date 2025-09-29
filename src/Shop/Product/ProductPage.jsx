@@ -62,9 +62,20 @@ const ProductPage = () => {
 
   const handleAddToCart = async () => {
     if (!product) return;
-    await addToCart(product, quantity);
-    alert(`${product.product || product.name || "Product"} added to cart!`);
-    console.log(addToCart);
+    // Ensure product object has id/_id and required fields
+    const cartProduct = {
+      id: product._id || product.id,
+      _id: product._id || product.id,
+      product: product.product || product.name || product.title,
+      name: product.product || product.name || product.title,
+      image: product.primaryImage?.url || product.primaryImage || (Array.isArray(product.image) ? (product.image[0]?.url || product.image[0]) : (product.image?.url || product.image || "/api/placeholder/400/400")),
+      price: product.discountedPrice || product.price || 0,
+      originalPrice: product.price || 0,
+      format: product.format || "",
+      // Add other fields if needed
+    };
+    await addToCart(cartProduct, quantity);
+    alert(`${cartProduct.product || cartProduct.name || "Product"} added to cart!`);
   };
 
   const handleBuyNow = async () => {
@@ -155,10 +166,41 @@ const ProductPage = () => {
   const productCategory = product.category || "Pet Products";
   const productDiscount = product.discount || 0;
   const productPromotion = product.promotion || "NONE";
+  const productBOGO = product.bogo || {};
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-2 sm:px-4 py-6 sm:py-8 lg:px-8">
+        {/* Promotion badge at top of detail page */}
+        {productPromotion && productPromotion !== 'NONE' && (
+          <div className="mb-4">
+            <span className="inline-block bg-orange-100 text-orange-700 text-sm font-semibold px-4 py-2 rounded-full">
+              {productPromotion.replace('_', ' ')}
+            </span>
+            {/* Show offer details */}
+            {productPromotion === 'BOGO' && productBOGO.active && (
+              <div className="mt-2 text-orange-700 text-xs font-medium">
+                Buy {productBOGO.buy || 1}, Get {productBOGO.getFree || 1} Free
+                {productBOGO.autoAddFree ? ' (Auto add to cart)' : ''}
+              </div>
+            )}
+            {productPromotion === 'FLASH_SALE' && (
+              <div className="mt-2 text-red-600 text-xs font-medium">
+                Flash Sale! Limited time offer.
+              </div>
+            )}
+            {productPromotion === 'SEASONAL' && (
+              <div className="mt-2 text-green-700 text-xs font-medium">
+                Seasonal Offer! Save more this season.
+              </div>
+            )}
+            {productPromotion === 'CLEARANCE' && (
+              <div className="mt-2 text-gray-700 text-xs font-medium">
+                Clearance Sale! Last chance to buy.
+              </div>
+            )}
+          </div>
+        )}
         {/* Breadcrumb */}
         <div className="flex flex-wrap items-center space-x-2 text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6">
           <button
@@ -262,9 +304,23 @@ const ProductPage = () => {
                 Category: {productCategory}
               </p>
               {productPromotion && productPromotion !== "NONE" && (
-                <p className="text-orange-600 text-sm sm:text-base font-medium">
-                  🎉 {productPromotion}
-                </p>
+                <div className="text-orange-600 text-sm sm:text-base font-medium">
+                  🎉 {productPromotion.replace('_', ' ')}
+                  {productPromotion === 'BOGO' && productBOGO.active && (
+                    <span className="ml-2 text-xs font-semibold">
+                      (Buy {productBOGO.buy || 1}, Get {productBOGO.getFree || 1} Free)
+                    </span>
+                  )}
+                  {productPromotion === 'FLASH_SALE' && (
+                    <span className="ml-2 text-xs font-semibold text-red-600">Flash Sale!</span>
+                  )}
+                  {productPromotion === 'SEASONAL' && (
+                    <span className="ml-2 text-xs font-semibold text-green-600">Seasonal Offer!</span>
+                  )}
+                  {productPromotion === 'CLEARANCE' && (
+                    <span className="ml-2 text-xs font-semibold text-gray-700">Clearance Sale!</span>
+                  )}
+                </div>
               )}
             </div>
 
@@ -290,6 +346,12 @@ const ProductPage = () => {
               <span className="text-2xl sm:text-3xl font-bold text-orange-600">
                 ₹{productPrice}
               </span>
+              {/* Promotion badge near price */}
+              {productPromotion && productPromotion !== 'NONE' && (
+                <span className="inline-block bg-orange-100 text-orange-700 text-xs font-semibold px-2 py-0.5 rounded-full">
+                  {productPromotion.replace('_', ' ')}
+                </span>
+              )}
               {productDiscount > 0 && originalPrice > productPrice && (
                 <>
                   <span className="text-lg sm:text-xl text-gray-500 line-through">
@@ -347,7 +409,21 @@ const ProductPage = () => {
                           Special Promotion:
                         </h4>
                         <p className="text-orange-700 text-sm">
-                          {productPromotion}
+                          {productPromotion.replace('_', ' ')}
+                          {productPromotion === 'BOGO' && productBOGO.active && (
+                            <span className="ml-2 text-xs font-semibold">
+                              (Buy {productBOGO.buy || 1}, Get {productBOGO.getFree || 1} Free)
+                            </span>
+                          )}
+                          {productPromotion === 'FLASH_SALE' && (
+                            <span className="ml-2 text-xs font-semibold text-red-600">Flash Sale!</span>
+                          )}
+                          {productPromotion === 'SEASONAL' && (
+                            <span className="ml-2 text-xs font-semibold text-green-600">Seasonal Offer!</span>
+                          )}
+                          {productPromotion === 'CLEARANCE' && (
+                            <span className="ml-2 text-xs font-semibold text-gray-700">Clearance Sale!</span>
+                          )}
                         </p>
                       </div>
                     )}

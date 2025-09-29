@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAddresses } from "../Apis/auth";
 import { useCart } from "../Context/CartContext";
+import { createOrder } from "../Apis/product_api";
 import { CreditCard, Banknote, QrCode, Smartphone, ChevronDown, CheckCircle2, Circle } from 'lucide-react';
 
 const CardTypeIcons = {
@@ -61,9 +62,40 @@ export default function CheckoutPage() {
 
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-  const handleProceedOrder = () => {
-    // Pass address and cart to order page (or order API)
-    navigate("/Order", { state: { address, cart, total } });
+  const [orderLoading, setOrderLoading] = useState(false);
+  const [orderError, setOrderError] = useState(null);
+
+  const handleProceedOrder = async () => {
+    if (!address || !address._id) {
+      setOrderError("No address selected.");
+      return;
+    }
+    if (!cart.length) {
+      setOrderError("No items in cart.");
+      return;
+    }
+    setOrderLoading(true);
+    setOrderError(null);
+    // Prepare order data
+    const orderData = {
+      shippingInfo: { address: address._id },
+      orderItems: cart.map(item => ({
+        name: item.name,
+        product: item.id,
+        quantity: item.quantity,
+        price: item.price
+      })),
+      paymentInfo: { status: "Pending" },
+      taxPrice: 0,
+      shippingPrice: 0
+    };
+    const result = await createOrder(orderData);
+    setOrderLoading(false);
+    if (result.success) {
+      navigate("/Order");
+    } else {
+      setOrderError(result.message || "Failed to place order.");
+    }
   };
 
   if (!cart.length) {
@@ -217,10 +249,14 @@ export default function CheckoutPage() {
         <div className="flex flex-col sm:flex-row justify-end items-center mt-8 gap-4">
           <button
             onClick={handleProceedOrder}
-            className="w-full sm:w-auto px-8 py-3 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-700 transition"
+            className={`w-full sm:w-auto px-8 py-3 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-700 transition ${orderLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            disabled={orderLoading}
           >
-            Proceed to Order
+            {orderLoading ? "Placing Order..." : "Proceed to Order"}
           </button>
+          {orderError && (
+            <div className="text-red-600 mt-2 text-sm">{orderError}</div>
+          )}
         </div>
       </div>
    

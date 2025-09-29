@@ -290,6 +290,22 @@ export default function AdminProduct() {
                       <span className="inline-flex px-2 py-1 text-xs font-semibold leading-4 text-yellow-800 bg-yellow-100 rounded-full mt-1">
                         {product.category}
                       </span>
+                        {/* Offer Badges */}
+                        {product.discount > 0 && (
+                          <span className="ml-2 inline-flex px-2 py-1 text-xs font-semibold leading-4 text-green-800 bg-green-100 rounded-full">
+                            {product.discount}% OFF
+                          </span>
+                        )}
+                        {product.promotion && product.promotion !== "" && (
+                          <span className="ml-2 inline-flex px-2 py-1 text-xs font-semibold leading-4 text-blue-800 bg-blue-100 rounded-full">
+                            {typeof product.promotion === "string" ? product.promotion : product.promotion.type}
+                          </span>
+                        )}
+                        {product.bogoOffer && (
+                          <span className="ml-2 inline-flex px-2 py-1 text-xs font-semibold leading-4 text-purple-800 bg-purple-100 rounded-full">
+                            BOGO
+                          </span>
+                        )}
                     </div>
                   </div>
                   
@@ -299,6 +315,16 @@ export default function AdminProduct() {
                         ₹{product.discountedPrice ?? product.price}
                       </p>
                       <p className="text-xs text-gray-500">Price</p>
+                        {/* Offer Details */}
+                        {product.discount > 0 && (
+                          <p className="text-xs text-green-600">Discount: {product.discount}%</p>
+                        )}
+                        {product.promotion && product.promotion !== "" && (
+                          <p className="text-xs text-blue-600">Promotion: {typeof product.promotion === "string" ? product.promotion : product.promotion.type}</p>
+                        )}
+                        {product.bogoOffer && (
+                          <p className="text-xs text-purple-600">BOGO Offer Active</p>
+                        )}
                     </div>
                     <div>
                       <p className="font-medium text-gray-900">
@@ -409,6 +435,24 @@ export default function AdminProduct() {
                             <div className="text-sm text-gray-500">
                               {product.user?.firstName} {product.user?.lastName}
                             </div>
+                              {/* Offer Badges */}
+                              <div className="mt-1 flex flex-wrap gap-1">
+                                {product.discount > 0 && (
+                                  <span className="inline-flex px-2 py-1 text-xs font-semibold leading-4 text-green-800 bg-green-100 rounded-full">
+                                    {product.discount}% OFF
+                                  </span>
+                                )}
+                                {product.promotion && product.promotion !== "" && (
+                                  <span className="inline-flex px-2 py-1 text-xs font-semibold leading-4 text-blue-800 bg-blue-100 rounded-full">
+                                    {typeof product.promotion === "string" ? product.promotion : product.promotion.type}
+                                  </span>
+                                )}
+                                {product.bogoOffer && (
+                                  <span className="inline-flex px-2 py-1 text-xs font-semibold leading-4 text-purple-800 bg-purple-100 rounded-full">
+                                    BOGO
+                                  </span>
+                                )}
+                              </div>
                           </div>
                         </div>
                       </td>
@@ -421,6 +465,16 @@ export default function AdminProduct() {
                         <div className="text-sm font-bold text-gray-900">
                           ₹{product.discountedPrice ?? product.price}
                         </div>
+                          {/* Offer Details */}
+                          {product.discount > 0 && (
+                            <div className="text-xs text-green-600">Discount: {product.discount}%</div>
+                          )}
+                          {product.promotion && product.promotion !== "" && (
+                            <div className="text-xs text-blue-600">Promotion: {typeof product.promotion === "string" ? product.promotion : product.promotion.type}</div>
+                          )}
+                          {product.bogoOffer && (
+                            <div className="text-xs text-purple-600">BOGO Offer Active</div>
+                          )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900 font-medium">

@@ -1,3 +1,59 @@
+// Get all products with offers
+export const getProductsWithOffers = async () => {
+  try {
+    const response = await PRODUCTS_API_URL.get('/offers/all');
+    return {
+      success: true,
+      products: response.data.products || [],
+      message: response.data.message || 'Offers fetched successfully'
+    };
+  } catch (error) {
+    console.error("Get Products With Offers API Error:", error.response?.data || error.message);
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Failed to fetch offers',
+      error: error.message
+    };
+  }
+};
+
+// Add/Update offer for a product (admin only)
+export const addProductOffer = async (productId, offerData) => {
+  try {
+    const response = await PRODUCTS_API_URL.put(`/${productId}/add-offer`, offerData);
+    return {
+      success: true,
+      product: response.data.product,
+      message: response.data.message || 'Offer added/updated successfully'
+    };
+  } catch (error) {
+    console.error("Add Product Offer API Error:", error.response?.data || error.message);
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Failed to add/update offer',
+      error: error.message
+    };
+  }
+};
+
+// Remove offer from a product (admin only)
+export const removeProductOffer = async (productId) => {
+  try {
+    const response = await PRODUCTS_API_URL.put(`/${productId}/remove-offer`);
+    return {
+      success: true,
+      product: response.data.product,
+      message: response.data.message || 'Offer removed successfully'
+    };
+  } catch (error) {
+    console.error("Remove Product Offer API Error:", error.response?.data || error.message);
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Failed to remove offer',
+      error: error.message
+    };
+  }
+};
 import axios from "axios";
 // import multer from 'multer';
 // import path from 'path';
@@ -297,6 +353,59 @@ export const deleteProductImages = async (productId, imageIds) => {
     return {
       success: false,
       message: error.response?.data?.message || 'Failed to delete images',
+      error: error.message
+    };
+  }
+};
+
+
+// order api
+const ORDER_API_URL = axios.create({
+  baseURL: "http://localhost:8000/api/v1/orders",
+  headers: {
+    "Content-Type": "application/json"
+  }
+});
+ORDER_API_URL.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+export const createOrder = async (orderData) => {
+  try {
+    const response = await ORDER_API_URL.post('/new-order', orderData);
+    return {
+      success: true,
+      message: 'Order created successfully',
+      data: response.data
+    };
+  } catch (error) {
+    console.error("Create Order API Error:", error.response?.data || error.message);
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Failed to create order',
+      error: error.message
+    };
+  }
+};
+export const getUserOrders = async (userId) => {
+  try {
+    const response = await ORDER_API_URL.get(`/user/${userId}`);
+    return {
+      success: true,
+      message: 'User orders fetched successfully',
+      data: response.data
+    };
+  } catch (error) {
+    console.error("Get User Orders API Error:", error.response?.data || error.message);
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Failed to fetch user orders',
       error: error.message
     };
   }

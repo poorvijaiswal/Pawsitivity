@@ -39,15 +39,21 @@ export const CartProvider = ({ children }) => {
       const result = await getCartAPI(userId);
       if (result.success && result.cart && result.cart.products) {
         setCart(
-          result.cart.products.map((p) => ({
-            id: p.product._id,
-            name: p.product.product || p.product.name || p.product.title || "Product",
-            image: Array.isArray(p.product.image) ? (p.product.image[0]?.url || p.product.image[0]) : (p.product.image?.url || p.product.image || "/api/placeholder/400/400"),
-            price: p.product.discountedPrice || p.product.price || 0,
-            originalPrice: p.product.price || 0,
-            quantity: p.quantity,
-            format: p.product.format || ""
-          }))
+          result.cart.products.map((p) => {
+            // Handle both populated and unpopulated product objects
+            const prod = typeof p.product === 'object' ? p.product : { _id: p.product };
+            return {
+              id: prod._id || prod.id || p.product,
+              name: prod.product || prod.name || prod.title || "Product",
+              image: Array.isArray(prod.image)
+                ? (prod.image[0]?.url || prod.image[0])
+                : (prod.primaryImage?.url || prod.primaryImage || prod.image?.url || prod.image || "/api/placeholder/400/400"),
+              price: prod.discountedPrice || prod.price || 0,
+              originalPrice: prod.price || 0,
+              quantity: p.quantity,
+              format: prod.format || ""
+            };
+          })
         );
       } else {
         setCart([]);

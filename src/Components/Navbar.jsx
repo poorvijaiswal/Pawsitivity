@@ -106,7 +106,9 @@ export default function Navbar({ isLoggedIn, userType, onLogout }) {
                         </li>
                       )}
                       <li className="px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-gray-50">
-                        My Orders
+                        <Link to="/order">
+                          My Orders
+                        </Link>
                       </li>
                       <li className="px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-gray-50">
                         Settings

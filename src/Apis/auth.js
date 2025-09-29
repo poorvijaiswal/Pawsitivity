@@ -25,13 +25,13 @@ export const signup = async (userData) => {
   try {
     const response = await API_URL.post('/signup', userData);
     
-    if (response.data.token) {
-      localStorage.setItem('token', response.data.token);
-    }
+      if (response.data.accessToken) {
+        localStorage.setItem('token', response.data.accessToken);
+      }
     
     return {
       success: true,
-      token: response.data.token,
+        token: response.data.accessToken,
       user: response.data.user,
       message: 'Registration successful'
     };
@@ -49,13 +49,13 @@ export const login = async (credentials) => {
   try {
     const response = await API_URL.post('/login', credentials);
     
-    if (response.data.token) {
-      localStorage.setItem('token', response.data.token);
-    }
+      if (response.data.accessToken) {
+        localStorage.setItem('token', response.data.accessToken);
+      }
     
     return {
       success: true,
-      token: response.data.token,
+        token: response.data.accessToken,
       user: response.data.user
     };
   } catch (error) {
