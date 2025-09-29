@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import AdminProduct from "../Admin/AdminProduct";
 import { getAllUsersByAdmin, getUserDetailByAdmin } from "../../Apis/auth";
 import axios from "axios";
+import OrdersManager from "./OrdersManager";
 
 // Initial categories
 const initialCategories = ["Dogs", "Cats", "Cattle", "Birds"];
@@ -308,7 +309,8 @@ export default function AdminDashboard() {
         )}
 
         {/* Other tabs */}
-        {["orders", "analytics"].map(
+        {currentTab === "orders" && <OrdersManager />}
+        {["analytics"].map(
           (tab) =>
             currentTab === tab && (
               <div

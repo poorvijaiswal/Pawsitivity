@@ -410,3 +410,21 @@ export const getUserOrders = async (userId) => {
     };
   }
 };
+
+export const getAllOrders = async () => {
+  try {
+    const response = await ORDER_API_URL.get('/all');
+    return {
+      success: true,
+      message: 'All orders fetched successfully',
+      data: response.data
+    };
+  } catch (error) {
+    console.error("Get All Orders API Error:", error.response?.data || error.message);
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Failed to fetch all orders',
+      error: error.message
+    };
+  }
+};

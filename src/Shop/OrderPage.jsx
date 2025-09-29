@@ -66,10 +66,56 @@ function OrderPage() {
               </div>
               <div className="mb-2 text-sm text-gray-600">
                 Shipping Address:{" "}
-                <span className="font-medium">
-                  {order.shippingInfo?.address?.street ||
-                    order.shippingInfo?.address ||
-                    "N/A"}
+                <span className="font-medium grid grid-cols-1 gap-1">
+                  {order.shippingInfo?.address ? (
+                    <>
+                      {order.shippingInfo.address.street && (
+                        <div>street: {order.shippingInfo.address.street}</div>
+                      )}
+                      {order.shippingInfo.address.phoneNumber && (
+                        <div>
+                          phoneNumber: {order.shippingInfo.address.phoneNumber}
+                        </div>
+                      )}
+                      {order.shippingInfo.address.address && (
+                        <div>address: {order.shippingInfo.address.address}</div>
+                      )}
+                      {order.shippingInfo.address.addressLine1 && (
+                        <div>
+                          addressLine1:{" "}
+                          {order.shippingInfo.address.addressLine1}
+                        </div>
+                      )}
+                      {order.shippingInfo.address.addressLine2 && (
+                        <div>
+                          addressLine2:{" "}
+                          {order.shippingInfo.address.addressLine2}
+                        </div>
+                      )}
+                      {order.shippingInfo.address.landmark && (
+                        <div>
+                          landmark: {order.shippingInfo.address.landmark}
+                        </div>
+                      )}
+                      {order.shippingInfo.address.city && (
+                        <div>city: {order.shippingInfo.address.city}</div>
+                      )}
+                      {order.shippingInfo.address.state && (
+                        <div>state: {order.shippingInfo.address.state}</div>
+                      )}
+                      {order.shippingInfo.address.pinCode && (
+                        <div>pinCode: {order.shippingInfo.address.pinCode}</div>
+                      )}
+                      {order.shippingInfo.address.country && (
+                        <div>country: {order.shippingInfo.address.country}</div>
+                      )}
+                      {order.shippingInfo.address.email && (
+                        <div>email: {order.shippingInfo.address.email}</div>
+                      )}
+                    </>
+                  ) : (
+                    "N/A"
+                  )}
                 </span>
               </div>
               <div className="mt-4">
