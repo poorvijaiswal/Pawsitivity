@@ -1,12 +1,4 @@
-// src/utils/errorHandling.js
 
-/**
- * Format and log API error responses consistently
- * @param {Error} error - The error object from the API call
- * @param {string} source - The source of the error (e.g., "payment", "order")
- * @param {string} action - The action being performed (e.g., "initiate", "verify")
- * @returns {Object} Formatted error response object
- */
 export const formatApiError = (error, source, action) => {
   const errorSource = `${source.charAt(0).toUpperCase() + source.slice(1)} ${action}`;
   console.error(`${errorSource} API Error:`, error.response?.data || error.message);
@@ -54,12 +46,6 @@ export const formatApiError = (error, source, action) => {
     status: statusCode
   };
 };
-
-/**
- * Handle common API error scenarios and provide user-friendly messages
- * @param {Error} error - The error from an API call
- * @returns {string} User-friendly error message
- */
 export const getUserFriendlyErrorMessage = (error) => {
   if (!error) return "An unknown error occurred";
   
@@ -94,12 +80,6 @@ export const getUserFriendlyErrorMessage = (error) => {
   // Use the error message from the server if available
   return error.response?.data?.message || error.message || "Something went wrong. Please try again.";
 };
-
-/**
- * Parse and handle Razorpay specific error responses
- * @param {Object} razorpayError - Error object from Razorpay
- * @returns {Object} Formatted error response
- */
 export const handleRazorpayError = (razorpayError) => {
   if (!razorpayError) return { message: "Unknown payment error" };
   
