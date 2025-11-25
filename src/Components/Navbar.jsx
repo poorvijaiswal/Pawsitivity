@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { FaUserCircle, FaSignOutAlt } from 'react-icons/fa';
-import logoImage from '../assets/Pawsitivity_logo.png';
+import logoImage from '../assets/pawsitivity_logo.png';
 import { Link, useNavigate } from 'react-router-dom';
 
 // Memoized navigation links to prevent re-renders
