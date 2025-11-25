@@ -3,10 +3,10 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { FaHeart } from "react-icons/fa";
 
-import IMG1 from "../assets/CustomerStories/Dog.jpg";
-import IMG2 from "../assets/CustomerStories/dog3.jpg";
-import IMG3 from "../assets/CustomerStories/Cow.jpg";
-import IMG4 from "../assets/CustomerStories/dog2.jpg";
+import IMG1 from "../assets/CustomerStories/Dog.JPG";
+import IMG2 from "../assets/CustomerStories/dog3.JPG";
+import IMG3 from "../assets/CustomerStories/Cow.JPG";
+import IMG4 from "../assets/CustomerStories/dog2.JPG";
 import pinkStar from "../assets/pinkstar.png";
 
 gsap.registerPlugin(ScrollTrigger);
